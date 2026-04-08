@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Builder Pro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e4e4e7;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top bar */
+    .topbar {
+      height: 48px;
+      background: #18181b;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 14px; font-weight: 600; }
+    .topbar-actions { display: flex; gap: 6px; }
+    .topbar-right { display: flex; gap: 8px; align-items: center; }
+    .tb-btn {
+      padding: 6px 12px;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .tb-btn:hover:not(:disabled) { background: #27272a; color: #e4e4e7; }
+    .tb-btn:disabled { opacity: 0.3; cursor: default; }
+    .tb-btn.primary {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+    .tb-btn.primary:hover { background: #2563eb; }
+    .tb-btn.danger:hover { background: #dc2626; border-color: #dc2626; color: white; }
+    .save-indicator {
+      font-size: 11px;
+      color: #71717a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .save-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* Main layout */
+    .main {
+      display: flex;
+      height: calc(100vh - 48px);
+    }
+
+    /* Form panel */
+    .form-panel {
+      width: 420px;
+      min-width: 420px;
+      background: #18181b;
+      border-right: 1px solid #27272a;
+      overflow-y: auto;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+    .form-panel.fullscreen {
+      position: fixed;
+      top: 48px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      min-width: 100%;
+      z-index: 1500;
+      border-right: none;
+    }
+
+    .form-section {
+      margin-bottom: 16px;
+      background: #1e1e23;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .form-section.dragging { opacity: 0.5; border-color: #3b82f6; }
+    .form-section.drag-over { border-color: #3b82f6; background: rgba(59,130,246,0.06); }
+    .form-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .form-section-header:hover { background: #27272a; }
+    .section-drag-handle {
+      color: #52525b;
+      cursor: grab;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .form-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-section-title .icon { font-size: 14px; }
+    .form-section-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-visibility-btn {
+      min-width: 56px;
+      height: 24px;
+      padding: 0 8px;
+      border: 1px solid #3f3f46;
+      border-radius: 999px;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .section-visibility-btn:hover {
+      background: #0f1117;
+      color: #e4e4e7;
+      border-color: #52525b;
+    }
+    .section-visibility-btn.off {
+      color: #71717a;
+      border-color: #27272a;
+      background: #18181b;
+    }
+    .form-section-arrow {
+      font-size: 10px;
+      color: #71717a;
+      transition: transform 0.15s;
+    }
+    .form-section.open .form-section-arrow { transform: rotate(180deg); }
+    .form-section-body {
+      display: none;
+      padding: 0 12px 12px;
+    }
+    .form-section.open .form-section-body { display: block; }
+
+    .form-group { margin-bottom: 10px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #a1a1aa;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f1117;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      color: #e4e4e7;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      min-height: 38px;
+      line-height: 1.5;
+      resize: none;
+      overflow: hidden;
+    }
+    .form-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .form-textarea::placeholder { color: #52525b; }
+
+    .form-row { display: flex; gap: 8px; }
+    .form-row .form-group { flex: 1; }
+
+    .entry-card {
+      background: #0f1117;
+      border: 1px solid #27272a;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: grab;
+    }
+    .entry-card:active { cursor: grabbing; }
+    .entry-card.dragging { opacity: 0.5; border-color: #3b82f6; }
+    .entry-card.drag-over { border-color: #3b82f6; background: rgba(59,130,246,0.05); }
+    .entry-card-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-bottom: 1px solid #27272a;
+    }
+    .drag-handle {
+      color: #52525b;
+      cursor: grab;
+      font-size: 14px;
+      padding: 2px;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .entry-card-title {
+      font-size: 12px;
+      font-weight: 500;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .entry-card-actions { display: flex; gap: 2px; }
+    .entry-card-btn {
+      width: 22px;
+      height: 22px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: #71717a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    .entry-card-btn:hover { background: #27272a; color: #e4e4e7; }
+    .entry-card-btn.delete:hover { background: #dc2626; color: white; }
+    .entry-card-body { padding: 8px; display: none; }
+    .entry-card.open .entry-card-body { display: block; }
+
+    .add-btn {
+      width: 100%;
+      padding: 8px;
+      border: 1px dashed #3f3f46;
+      border-radius: 6px;
+      background: transparent;
+      color: #71717a;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .add-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+
+    /* Preview panel */
+    .preview-panel {
+      flex: 1;
+      background: #27272a;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+    .preview-panel::-webkit-scrollbar { width: 6px; }
+    .preview-panel::-webkit-scrollbar-track { background: transparent; }
+    .preview-panel::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+
+    .resume-page {
+      --preview-page-height-adjust: 100px;
+      width: 8.5in;
+      min-height: calc(11in + var(--preview-page-height-adjust));
+      background: white;
+      color: #111;
+      --resume-font-step: 0px;
+      --resume-font-family: "Times New Roman", Georgia, serif;
+      font-family: var(--resume-font-family);
+      padding: 0.35in 0.5in;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      box-sizing: border-box;
+    }
+
+    /* Resume styles */
+    .r-header {
+      display: grid;
+      grid-template-columns: 1in 1fr;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 6px;
+    }
+    .r-photo {
+      width: 1in;
+      height: 1.15in;
+      border: 1.2px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 10px;
+      line-height: 1.2;
+      padding: 4px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .r-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .r-name { font-size: calc(26px + var(--resume-font-step)); font-weight: 700; margin: 0; line-height: 1.05; text-align: center; }
+    .r-contact { margin-top: 4px; font-size: calc(12px + var(--resume-font-step)); line-height: 1.25; text-align: center; }
+    .r-section { margin-top: 9px; }
+    .r-summary {
+      font-size: calc(12px + var(--resume-font-step));
+      line-height: 1.4;
+      margin-top: 6px;
+      text-align: left;
+    }
+    .r-section-title {
+      font-size: calc(13px + var(--resume-font-step));
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #222;
+      padding-bottom: 2px;
+      margin-bottom: 5px;
+    }
+    .r-entry { margin-bottom: 6px; }
+    .r-tech-stack {
+      font-size: calc(12px + var(--resume-font-step));
+      color: #555;
+      margin-top: 1px;
+      margin-bottom: 2px;
+    }
+    .r-topline { display: flex; justify-content: space-between; gap: 16px; font-size: calc(13px + var(--resume-font-step)); font-weight: 700; }
+    .r-subline { display: flex; justify-content: space-between; gap: 16px; font-size: calc(12px + var(--resume-font-step)); font-style: italic; margin-top: 0; }
+    .r-left { flex: 1; }
+    .r-right { white-space: nowrap; text-align: right; }
+    .r-meta { font-size: calc(12px + var(--resume-font-step)); margin: 1px 0; }
+    .r-skills { font-size: calc(12px + var(--resume-font-step)); line-height: 1.35; }
+    .r-skills strong { font-weight: 700; }
+    .r-ul { margin: 3px 0 0 16px; padding: 0; font-size: calc(12px + var(--resume-font-step)); line-height: 1.3; }
+    .r-li { margin: 0 0 1px 0; }
+    .r-compact { margin-bottom: 4px; }
+
+    /* Score panel */
+    .score-panel {
+      width: 280px;
+      min-width: 280px;
+      background: #18181b;
+      border-left: 1px solid #27272a;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .score-panel::-webkit-scrollbar { width: 6px; }
+    .score-panel::-webkit-scrollbar-track { background: transparent; }
+    .score-panel::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+
+    .score-card {
+      background: #1e1e23;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .score-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .score-ring {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 8px;
+      position: relative;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .score-bar {
+      height: 4px;
+      background: #27272a;
+      border-radius: 2px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+    }
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    .score-item-label { color: #a1a1aa; }
+    .score-item-value { font-weight: 600; }
+
+    .feedback-item {
+      padding: 8px;
+      background: #0f1117;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .feedback-item.warn { border-left: 3px solid #f59e0b; }
+    .feedback-item.good { border-left: 3px solid #22c55e; }
+    .feedback-item.error { border-left: 3px solid #ef4444; }
+    .feedback-title { font-weight: 600; margin-bottom: 2px; }
+    .feedback-desc { color: #a1a1aa; }
+    .insight-block {
+      background: #0f1117;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .insight-block pre {
+      white-space: pre-wrap;
+      font-family: inherit;
+      color: #d4d4d8;
+    }
+
+    .prompt-box {
+      width: 100%;
+      min-height: 220px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #3f3f46;
+      background: #0f1117;
+      color: #e4e4e7;
+      font-size: 12px;
+      line-height: 1.5;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .prompt-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .prompt-actions .tb-btn {
+      flex: 1;
+      justify-content: center;
+    }
+
+    /* Quick-start wizard */
+    .wizard-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .wizard-overlay.active { display: flex; }
+    .wizard-modal {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .wizard-modal::-webkit-scrollbar { width: 6px; }
+    .wizard-modal::-webkit-scrollbar-track { background: transparent; }
+    .wizard-modal::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    .wizard-step { display: none; }
+    .wizard-step.active { display: block; }
+    .wizard-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .wizard-desc { font-size: 13px; color: #a1a1aa; margin-bottom: 16px; line-height: 1.4; }
+    .wizard-progress {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .wizard-progress-bar {
+      flex: 1;
+      height: 3px;
+      background: #27272a;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .wizard-progress-bar.active { background: #3b82f6; }
+    .wizard-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    .wizard-actions .tb-btn { padding: 8px 20px; }
+
+    /* Role cards */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .role-card {
+      padding: 12px;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #0f1117;
+    }
+    .role-card:hover { border-color: #3b82f6; background: #1a1a2e; }
+    .role-card.selected { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+    .role-card-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .role-card-desc { font-size: 11px; color: #71717a; line-height: 1.3; }
+
+    /* Skill picker */
+    .skill-picker {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      background: #0f1117;
+    }
+    .skill-picker::-webkit-scrollbar { width: 6px; }
+    .skill-picker::-webkit-scrollbar-track { background: transparent; }
+    .skill-picker::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    .skill-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 10px 4px;
+      position: sticky;
+      top: 0;
+      background: #0f1117;
+    }
+    .skill-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.1s;
+    }
+    .skill-item:hover { background: #1e1e23; }
+    .skill-item.selected { background: rgba(59,130,246,0.1); color: #60a5fa; }
+    .skill-check {
+      width: 16px;
+      height: 16px;
+      border: 1px solid #3f3f46;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .skill-item.selected .skill-check {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    /* Bullet bank */
+    .bullet-bank {
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      background: #0f1117;
+    }
+    .bullet-bank::-webkit-scrollbar { width: 6px; }
+    .bullet-bank::-webkit-scrollbar-track { background: transparent; }
+    .bullet-bank::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+    .bullet-item {
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.4;
+      cursor: pointer;
+      border-bottom: 1px solid #1e1e23;
+      transition: background 0.1s;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .bullet-item:hover { background: #1e1e23; }
+    .bullet-item.selected { background: rgba(59,130,246,0.1); }
+    .bullet-check {
+      width: 16px;
+      height: 16px;
+      border: 1px solid #3f3f46;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .bullet-item.selected .bullet-check {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    .selected-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .selected-skill-tag {
+      padding: 2px 8px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 12px;
+      font-size: 11px;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .selected-skill-tag .remove {
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    /* Print */
+    @media print {
+      body { background: white; }
+      .topbar, .form-panel, .score-panel, .wizard-overlay { display: none !important; }
+      .preview-panel {
+        background: white;
+        padding: 0;
+        overflow: visible;
+      }
+      .resume-page {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 11in;
+        padding: 0.35in 0.5in;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Resume Builder Pro</span>
+      <div class="topbar-actions">
+        <button class="tb-btn" id="undoBtn" disabled onclick="undo()" title="Undo (Ctrl+Z)">↩ Undo</button>
+        <button class="tb-btn" id="redoBtn" disabled onclick="redo()" title="Redo (Ctrl+Y)">↪ Redo</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="openWizard()">Quick Start</button>
+      <button class="tb-btn" onclick="openAIAnalyst()">AI Analyst</button>
+      <button class="tb-btn" onclick="decreaseResumeFont()" title="Decrease resume font">A-</button>
+      <button class="tb-btn" onclick="increaseResumeFont()" title="Increase resume font">A+</button>
+      <select id="fontFamilySelect" class="tb-btn" style="padding:6px 10px;background:#18181b;color:#e4e4e7" onchange="setResumeFontFamily(this.value)">
+        <option value="Times New Roman, Georgia, serif">Times</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="Calibri, Arial, sans-serif">Calibri</option>
+      </select>
+      <span class="save-indicator"><span class="save-dot"></span> Auto-saved</span>
+      <button class="tb-btn" onclick="saveAsJSON()">Save JSON</button>
+      <button class="tb-btn" onclick="loadJSON()">Load JSON</button>
+      <button class="tb-btn" onclick="toggleFormFullscreen()" title="Toggle form panel fullscreen">⛶</button>
+      <button class="tb-btn danger" onclick="clearAll()">Clear</button>
+      <button class="tb-btn primary" onclick="exportPDF()">Export PDF</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Form Panel -->
+    <div class="form-panel" id="formPanel">
+      <input type="file" id="jsonLoadInput" accept=".json" style="display:none" onchange="handleJSONLoad(event)" />
+      <!-- Header -->
+      <div class="form-section open" draggable="true" data-section="personal" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">👤</span> Personal Info</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-personal" onclick="toggleSectionVisibility(event, 'personal')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <textarea class="form-textarea" rows="1" id="f-name" placeholder="Your Name" oninput="onFormChange();autoExpandTextarea(this)"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Info</label>
+            <textarea class="form-textarea" rows="1" id="f-contact" placeholder="+66 x-xxx-xxxx | email@example.com" oninput="onFormChange();autoExpandTextarea(this)"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Role</label>
+            <textarea class="form-textarea" rows="1" id="f-target" placeholder="Frontend Developer, Data Analyst, etc." oninput="onFormChange();autoExpandTextarea(this)"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Photo</label>
+            <input type="file" id="f-photo" accept="image/*" onchange="handlePhotoUpload(event)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section open" draggable="true" data-section="summary" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">📝</span> Personal Statement</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-summary" onclick="toggleSectionVisibility(event, 'summary')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body">
+          <div class="form-group">
+            <label class="form-label">Personal Statement</label>
+            <textarea class="form-textarea" id="f-summary" rows="4" placeholder="3-4 sentence personal statement" oninput="onSummaryChange();autoExpandTextarea(this)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="form-section open" draggable="true" data-section="education" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">🎓</span> Education</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-education" onclick="toggleSectionVisibility(event, 'education')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="eduEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addEduEntry()">+ Add Education</button>
+        </div>
+      </div>
+
+      <div class="form-section open" draggable="true" data-section="experience" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">💼</span> Experience</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-experience" onclick="toggleSectionVisibility(event, 'experience')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="expEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addExpEntry()">+ Add Experience</button>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div class="form-section open" draggable="true" data-section="projects" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">🚀</span> Projects</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-projects" onclick="toggleSectionVisibility(event, 'projects')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="projEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addProjEntry()">+ Add Project</button>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="form-section open" draggable="true" data-section="skills" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">⚡</span> Technical Skills</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-skills" onclick="toggleSectionVisibility(event, 'skills')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="skillEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addSkillEntry()">+ Add Skill Category</button>
+        </div>
+      </div>
+
+      <div class="form-section open" draggable="true" data-section="leadership" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">🏆</span> Leadership</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-leadership" onclick="toggleSectionVisibility(event, 'leadership')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="leadEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addLeadershipEntry()">+ Add Leadership</button>
+        </div>
+      </div>
+
+      <div class="form-section open" draggable="true" data-section="certifications" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">📜</span> Certifications</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-certifications" onclick="toggleSectionVisibility(event, 'certifications')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="certEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addCertificationEntry()">+ Add Certification</button>
+        </div>
+      </div>
+
+      <div class="form-section open" draggable="true" data-section="languages" ondragstart="onSectionDragStart(event)" ondragover="onSectionDragOver(event)" ondrop="onSectionDrop(event)" ondragend="onSectionDragEnd(event)">
+        <div class="form-section-header" onclick="toggleSection(this)">
+          <span class="form-section-title"><span class="section-drag-handle">⠿</span><span class="icon">🌐</span> Languages</span>
+          <span class="form-section-actions">
+            <button type="button" class="section-visibility-btn" id="toggle-languages" onclick="toggleSectionVisibility(event, 'languages')">On</button>
+            <span class="form-section-arrow">▼</span>
+          </span>
+        </div>
+        <div class="form-section-body" id="langEntries"></div>
+        <div class="form-section-body" style="padding-top:0">
+          <button class="add-btn" onclick="addLanguageEntry()">+ Add Language</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Preview Panel -->
+    <div class="preview-panel">
+      <div class="resume-page" id="resumePage">
+        <div class="r-header" id="rPersonal">
+          <div class="r-photo" id="rPhoto"><span>Photo</span></div>
+          <div>
+            <h1 class="r-name" id="rName">YOUR NAME</h1>
+            <div class="r-contact" id="rContact">+66 x-xxx-xxxx | email@example.com</div>
+          </div>
+        </div>
+        <div id="rSummary"></div>
+        <div id="rEducation"></div>
+        <div id="rExperience"></div>
+        <div id="rProjects"></div>
+        <div id="rSkills"></div>
+        <div id="rLeadership"></div>
+        <div id="rCertifications"></div>
+        <div id="rLanguages"></div>
+      </div>
+    </div>
+
+    <!-- Score Panel -->
+    <div class="score-panel">
+      <div class="score-card">
+        <div class="score-card-title">📊 Resume Score</div>
+        <div class="score-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#27272a" stroke-width="6"/>
+            <circle id="scoreCircle" cx="40" cy="40" r="34" fill="none" stroke="#22c55e" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"/>
+          </svg>
+          <div class="score-ring-text" id="scoreText">0</div>
+        </div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-card-title">📋 Breakdown</div>
+        <div id="scoreBreakdown"></div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-card-title">💡 Feedback</div>
+        <div id="scoreFeedback"></div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-card-title">📄 1-Page Fit</div>
+        <div id="pageFitStatus"></div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-card-title">🤖 AI Insights</div>
+        <div id="aiInsights"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Start Wizard -->
+  <div class="wizard-overlay" id="wizardOverlay">
+    <div class="wizard-modal" style="width:600px">
+      <div class="wizard-progress">
+        <div class="wizard-progress-bar active" id="wp1"></div>
+        <div class="wizard-progress-bar" id="wp2"></div>
+        <div class="wizard-progress-bar" id="wp3"></div>
+      </div>
+
+      <!-- Step 1: Choose Role -->
+      <div class="wizard-step active" id="wStep1">
+        <div class="wizard-title">Choose Your Target Role</div>
+        <div class="wizard-desc">เลือกตำแหน่งที่จะสมัคร แล้วระบบจะเติม skills, structure, และ interview questions ที่เกี่ยวข้อง</div>
+        <div class="role-grid" id="roleGrid"></div>
+        <div class="wizard-actions">
+          <button class="tb-btn" onclick="closeWizard()">Cancel</button>
+          <button class="tb-btn primary" id="wNext1" onclick="wizardNext(1)" disabled>Next</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Pick Skills -->
+      <div class="wizard-step" id="wStep2">
+        <div class="wizard-title">Select Your Skills</div>
+        <div class="wizard-desc">เลือกทักษะที่มี — ระบบจะจัดหมวดหมู่ให้อัตโนมัติ</div>
+        <div class="skill-picker" id="skillPicker"></div>
+        <div class="selected-skills" id="selectedSkills"></div>
+        <div class="wizard-actions">
+          <button class="tb-btn" onclick="wizardPrev(2)">Back</button>
+          <button class="tb-btn primary" id="wNext2" onclick="wizardNext(2)" disabled>Next</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Interview Prompt -->
+      <div class="wizard-step" id="wStep3">
+        <div class="wizard-title">AI Interview — สร้าง Resume</div>
+        <div class="wizard-desc">Copy prompt ด้านล่างไปวางใน AI chat (Gemini, ChatGPT, Claude) แล้วตอบคำถามที่ AI ถาม — AI จะสร้าง resume ให้เป็น JSON แล้วเอากลับมาวางที่นี่</div>
+        <div class="form-group">
+          <label class="form-label">1. Copy Prompt นี้ไปวางใน AI chat</label>
+          <textarea class="prompt-box" id="wizardPromptOut" readonly style="min-height:200px"></textarea>
+          <button class="tb-btn primary" style="margin-top:6px;width:100%;justify-content:center" onclick="copyWizardPrompt()">Copy Prompt</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">2. วาง JSON ที่ได้จาก AI กลับมา</label>
+          <textarea class="prompt-box" id="wizardResultIn" placeholder='Paste JSON response from AI here...' style="min-height:120px"></textarea>
+        </div>
+        <div class="wizard-actions">
+          <button class="tb-btn" onclick="wizardPrev(3)">Back</button>
+          <button class="tb-btn primary" onclick="wizardApplyAI()">Apply to Resume</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Tools Modal -->
+  <div class="wizard-overlay" id="aiOverlay">
+    <div class="wizard-modal" style="width:640px">
+      <div class="wizard-title">AI Tools</div>
+      <div class="wizard-desc">เลือก tool → กด Copy Prompt → วางใน AI chat → คัดลอก JSON ที่ได้ → วางกลับ → Apply</div>
+
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="tb-btn ai-tool-btn active" data-tool="summary" onclick="selectAITool('summary')">Personal Statement</button>
+        <button class="tb-btn ai-tool-btn" data-tool="bulletrewrite" onclick="selectAITool('bulletrewrite')">Bullet Rewrite</button>
+        <button class="tb-btn ai-tool-btn" data-tool="grammar" onclick="selectAITool('grammar')">Grammar</button>
+        <button class="tb-btn ai-tool-btn" data-tool="atsreview" onclick="selectAITool('atsreview')">ATS Review</button>
+        <button class="tb-btn ai-tool-btn" data-tool="recruiterreview" onclick="selectAITool('recruiterreview')">Recruiter Review</button>
+        <button class="tb-btn ai-tool-btn" data-tool="managerreview" onclick="selectAITool('managerreview')">Hiring Manager</button>
+        <button class="tb-btn ai-tool-btn" data-tool="humanreview" onclick="selectAITool('humanreview')">Human vs AI</button>
+        <button class="tb-btn ai-tool-btn" data-tool="coverletter" onclick="selectAITool('coverletter')">Cover Letter</button>
+      </div>
+
+      <div id="aiToolDesc" style="background:#0f1117;border:1px solid #27272a;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:12px;line-height:1.5;color:#a1a1aa"></div>
+
+      <!-- Standard mode: prompt + JSON input -->
+      <div id="aiStandardMode">
+        <div class="form-group">
+          <label class="form-label">Prompt (ข้อมูล resume ถูกดึงอัตโนมัติ)</label>
+          <textarea class="prompt-box" id="aiPromptOut" readonly style="min-height:180px"></textarea>
+          <button class="tb-btn primary" style="margin-top:6px;width:100%;justify-content:center" onclick="copyAIPrompt()">Copy Prompt</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">วาง JSON ที่ได้จาก AI กลับมา</label>
+          <textarea class="prompt-box" id="aiResultIn" placeholder='Paste JSON response here...' style="min-height:120px"></textarea>
+        </div>
+
+        <div class="wizard-actions" style="margin-top:0">
+          <button class="tb-btn" onclick="closeAIAnalyst()">Close</button>
+          <button class="tb-btn primary" onclick="applyAIResult()">Apply to Resume</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .ai-tool-btn { font-size:11px; padding:5px 10px; }
+    .ai-tool-btn.active { background:#3b82f6; border-color:#3b82f6; color:white; }
+    .ai-msg { margin-bottom:10px; }
+    .ai-msg-q { background:#1e1e23; border:1px solid #27272a; border-radius:8px; padding:10px 12px; font-size:13px; line-height:1.5; }
+    .ai-msg-q strong { color:#60a5fa; }
+    .ai-msg-a { background:#0f1117; border-radius:8px; padding:10px 12px; font-size:13px; line-height:1.5; color:#a1a1aa; }
+    .ai-msg-a em { color:#e4e4e7; font-style:normal; }
+  </style>
+
+  <script>
+    // ===== AI TOOLS (Copy Prompt → Paste JSON → Apply) =====
+    let currentAITool = 'summary';
+
+    function getResumeContext() {
+      const s = state;
+      return {
+        targetRole: s.targetRole || 'Not specified',
+        name: s.name || 'Not specified',
+        contact: s.contact || 'Not specified',
+        summary: s.summary || '',
+        education: s.education,
+        experience: s.experience,
+        skills: s.skills,
+        projects: s.projects,
+        leadership: s.leadership,
+        certifications: s.certifications,
+        languages: s.languages,
+      };
+    }
+
+    function getAIWritingRules() {
+      return [
+        'Write in a professional, formal, human-sounding tone.',
+        'Do not sound robotic, vague, inflated, or obviously AI-generated.',
+        'Do not use filler phrases or empty claims.',
+        'Prefer concrete nouns, specific responsibilities, measurable outcomes, and clear verbs.',
+        'Avoid weak verbs such as: supported, helped, responsible for, involved in, worked on.',
+        'Prefer stronger verbs such as: built, developed, designed, implemented, optimized, delivered, reduced, improved, automated, led.',
+        'Preserve truthful scope. Do not invent unrealistic achievements.',
+        'Keep wording concise, ATS-friendly, and easy to scan.',
+      ].join('\n- ');
+    }
+
+    function getAllResumeBullets() {
+      return [...state.experience, ...state.projects, ...state.leadership]
+        .flatMap(x => (x.bullets || []).filter(b => b.trim()));
+    }
+
+    function getOnePageGuide() {
+      return {
+        preferredMaxSummarySentences: 4,
+        preferredMaxSkillCategories: 4,
+        preferredMaxSkillsPerCategory: 6,
+        preferredMaxProjectEntries: 2,
+        preferredMaxBulletsPerEntry: 3,
+        preferredMaxBulletWords: 24,
+      };
+    }
+
+    function upsertAIInsight(key, title, payload) {
+      if (!state.aiInsights) state.aiInsights = {};
+      state.aiInsights[key] = { title, payload };
+    }
+
+    function replaceBulletByText(sourceText, rewrittenText) {
+      if (!sourceText || !rewrittenText) return false;
+      for (const section of [state.experience, state.projects, state.leadership]) {
+        for (const entry of section) {
+          const idx = (entry.bullets || []).findIndex(b => b.trim() === sourceText.trim());
+          if (idx >= 0) {
+            entry.bullets[idx] = rewrittenText.trim();
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    const AI_TOOLS = {
+      summary: {
+        label: 'Personal Statement',
+        desc: 'สร้าง personal statement 3-4 ประโยคสำหรับส่วนบนสุดของ resume — บอกว่าใคร, เก่งอะไร, และทำไมถึงเหมาะกับ role นี้',
+        buildPrompt() {
+          return `You are a senior resume writer.
+
+Task:
+Write a personal statement for the candidate below.
+
+Quality rules:
+- ${getAIWritingRules()}
+- Write exactly 3-4 sentences.
+- Keep it concise enough for a 1-page resume.
+- Sentence 1: who the candidate is and target role.
+- Sentence 2: strongest technical strengths and stack.
+- Sentence 3: business impact, delivery style, or collaboration strengths.
+- Optional sentence 4: domain fit, collaboration style, or product mindset if supported by the resume.
+- Do not use first person pronouns.
+
+1-page guide:
+${JSON.stringify(getOnePageGuide(), null, 2)}
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "personalStatement": "3-4 sentence personal statement"
+}`;
+        },
+        apply(json) {
+          if (json.personalStatement) state.summary = json.personalStatement.trim();
+        }
+      },
+      bulletrewrite: {
+        label: 'Bullet Rewrite',
+        desc: 'แก้ bullet เดียวให้ดู professional ขึ้น — เลือก bullet จาก resume ด้านล่าง แล้ว AI จะ rewrite ให้',
+        buildPrompt() {
+          const allBullets = getAllResumeBullets();
+          return `You are a senior resume editor.
+
+Task:
+Rewrite ALL resume bullets below to sound more professional, specific, and human-written.
+
+Quality rules:
+- ${getAIWritingRules()}
+- Keep each bullet to one line.
+- Use one strong action verb at the start.
+- Keep bullets under 24 words when possible.
+- Preserve the original meaning.
+- Return bullets in the same order.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+All current bullets:
+${allBullets.length ? allBullets.map((b, i) => `${i + 1}. ${b}`).join('\n') : 'none'}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "rewrittenBullets": ["bullet 1 improved", "bullet 2 improved"]
+}`;
+        },
+        apply(json) {
+          if (json.rewrittenBullets && json.rewrittenBullets.length) {
+            let idx = 0;
+            for (const section of [state.experience, state.projects, state.leadership]) {
+              for (const entry of section) {
+                if (entry.bullets && idx < json.rewrittenBullets.length) {
+                  entry.bullets = entry.bullets.map(() => json.rewrittenBullets[idx++] || '');
+                }
+              }
+            }
+          }
+        }
+      },
+      grammar: {
+        label: 'Grammar',
+        desc: 'ตรวจ grammar, tone, consistency ของ bullet ทั้งหมดใน resume — แก้คำผิด, ปรับ parallel structure, แทนที่คำ generic',
+        buildPrompt() {
+          const allBullets = getAllResumeBullets();
+          return `You are a senior resume editor.
+
+Task:
+Edit the resume wording below for grammar, tone, consistency, concision, and professionalism.
+
+Quality rules:
+- ${getAIWritingRules()}
+- Fix grammar, tense, punctuation, parallel structure, and tone consistency.
+- Keep bullets in the same order.
+- Keep the same meaning unless wording is weak or unclear.
+- Rewrite bullets so they start with a strong verb when possible.
+- Keep wording concise enough for a 1-page resume.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Bullets to review in current order:
+${allBullets.length ? allBullets.map((b, i) => `${i + 1}. ${b}`).join('\n') : 'none'}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "fixedBullets": ["bullet 1 in same order", "bullet 2 in same order"],
+  "issues": ["specific issue 1", "specific issue 2"],
+  "suggestions": ["high-level suggestion 1", "high-level suggestion 2"]
+}`;
+        },
+        apply(json) {
+          if (json.fixedBullets && json.fixedBullets.length) {
+            let idx = 0;
+            for (const section of [state.experience, state.projects, state.leadership]) {
+              for (const entry of section) {
+                if (entry.bullets && idx < json.fixedBullets.length) {
+                  entry.bullets = entry.bullets.map(() => json.fixedBullets[idx++] || '');
+                }
+              }
+            }
+          }
+          upsertAIInsight('grammar', 'Grammar & Tone Review', { issues: json.issues || [], suggestions: json.suggestions || [] });
+        }
+      },
+      atsreview: {
+        label: 'ATS Review',
+        desc: 'ตรวจว่า resume อ่านผ่าน ATS (Applicant Tracking System) ได้ดีแค่ไหน — บอก keyword ที่ขาด, จุดเสี่ยง, และสิ่งที่ควรเพิ่ม',
+        buildPrompt() {
+          return `You are an ATS-focused resume reviewer.
+
+Task:
+Review this resume for ATS friendliness and keyword clarity.
+
+Quality rules:
+- Evaluate structure, section names, keyword usage, scanability, and wording.
+- Flag anything too vague for ATS matching.
+- Consider whether the content is concise enough for a strong 1-page technical resume.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "score": 0,
+  "strengths": ["strength 1", "strength 2"],
+  "risks": ["risk 1", "risk 2"],
+  "missingKeywords": ["keyword 1", "keyword 2"],
+  "improvements": ["improvement 1", "improvement 2"]
+}`;
+        },
+        apply(json) { upsertAIInsight('atsreview', 'ATS Review', json); }
+      },
+      recruiterreview: {
+        label: 'Recruiter Review',
+        desc: 'มุมมอง recruiter ที่สแกน resume ครั้งแรก — บอกว่าดูน่าเชื่อถือมั้ย, จุดไหนอ่อน, จุดไหนแข็ง, และควรแก้อะไรก่อน',
+        buildPrompt() {
+          return `You are a recruiter reviewing this resume for a first-pass screen.
+
+Task:
+Assess clarity, professionalism, credibility, relevance, and overall first impression.
+
+Quality rules:
+- Be direct and practical.
+- Identify anything that feels confusing, weak, generic, inflated, or underdeveloped.
+- Comment on whether the resume feels appropriately scoped for one page.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "score": 0,
+  "strengths": ["strength 1", "strength 2"],
+  "concerns": ["concern 1", "concern 2"],
+  "topFixes": ["top fix 1", "top fix 2"],
+  "verdict": "short recruiter verdict"
+}`;
+        },
+        apply(json) { upsertAIInsight('recruiterreview', 'Recruiter Review', json); }
+      },
+      managerreview: {
+        label: 'Hiring Manager',
+        desc: 'มุมมอง hiring manager ที่ดู technical depth — บอกว่า bullet ไหนดูมีน้ำหนัก, ไหนดูผิวเผิน, และ technical gap ที่ควรเติม',
+        buildPrompt() {
+          return `You are a hiring manager reviewing this resume for technical relevance.
+
+Task:
+Assess whether the technical depth, tooling choices, and accomplishments look convincing for the target role.
+
+Quality rules:
+- Focus on technical substance, ownership, and scope.
+- Identify which bullets are strongest and which feel shallow.
+- Call out where the candidate should clarify architecture, implementation depth, scale, or outcomes.
+- Keep one-page constraints in mind.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "score": 0,
+  "strongestSignals": ["signal 1", "signal 2"],
+  "weakestSignals": ["weakness 1", "weakness 2"],
+  "technicalGaps": ["gap 1", "gap 2"],
+  "recommendations": ["recommendation 1", "recommendation 2"]
+}`;
+        },
+        apply(json) { upsertAIInsight('managerreview', 'Hiring Manager Review', json); }
+      },
+      humanreview: {
+        label: 'Human vs AI',
+        desc: 'ตรวจว่า resume ส่วนไหนดูคนเขียนจริง ส่วนไหนดู AI เขียน — บอกจุดที่ภาษา generic เกินไป และวิธีทำให้ดู human ขึ้น',
+        buildPrompt() {
+          return `You are a resume reviewer specializing in detecting AI-like writing.
+
+Task:
+Review this resume and identify which parts sound human-written and which parts sound AI-generated or generic.
+
+Quality rules:
+- Focus on wording, specificity, sentence rhythm, action verbs, repetition, and realism.
+- Call out generic phrasing, empty impact claims, and unnatural sentence patterns.
+- Recommend how to make it feel more human while staying concise enough for one page.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "verdict": "human-like / mixed / AI-like",
+  "humanSignals": ["signal 1", "signal 2"],
+  "aiSignals": ["signal 1", "signal 2"],
+  "rewriteTargets": ["target 1", "target 2"],
+  "recommendations": ["recommendation 1", "recommendation 2"]
+}`;
+        },
+        apply(json) { upsertAIInsight('humanreview', 'Human vs AI Review', json); }
+      },
+      coverletter: {
+        label: 'Cover Letter',
+        desc: 'สร้าง cover letter 3 ย่อหน้าจาก resume — เก็บเป็น insight แยก ไม่ยัดลงหน้า resume',
+        buildPrompt() {
+          return `You are a senior cover letter writer.
+
+Task:
+Write a concise, professional cover letter based on the resume below.
+
+Quality rules:
+- ${getAIWritingRules()}
+- Keep it under 250 words.
+- Write 3 paragraphs only.
+- Paragraph 1: role interest and concise introduction.
+- Paragraph 2: strongest relevant projects, technical strengths, and impact.
+- Paragraph 3: why the candidate is a strong fit and a professional closing.
+- Make it tailored to the target role if one exists.
+- Do not overpraise. Keep it credible and specific.
+- Use plain text only. Separate paragraphs with \n\n.
+
+Resume context:
+${JSON.stringify(getResumeContext(), null, 2)}
+
+Return ONLY valid JSON with this exact schema:
+{
+  "coverLetter": "paragraph 1\\n\\nparagraph 2\\n\\nparagraph 3"
+}`;
+        },
+        apply(json) {
+          upsertAIInsight('coverletter', 'Cover Letter', json);
+        }
+      }
+    };
+
+    function openAIAnalyst() {
+      document.getElementById('aiOverlay').classList.add('active');
+      selectAITool('summary');
+    }
+
+    function closeAIAnalyst() {
+      document.getElementById('aiOverlay').classList.remove('active');
+    }
+
+    function selectAITool(tool) {
+      currentAITool = tool;
+      const def = AI_TOOLS[tool];
+      document.querySelectorAll('.ai-tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+      document.getElementById('aiToolDesc').innerHTML = '<strong>' + esc(def.label) + '</strong><br>' + esc(def.desc);
+      document.getElementById('aiPromptOut').value = def.buildPrompt('');
+      document.getElementById('aiResultIn').value = '';
+    }
+
+    function copyAIPrompt() {
+      const box = document.getElementById('aiPromptOut');
+      box.select();
+      box.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(box.value).then(() => {
+        const btn = event?.target;
+        if (btn) {
+          const old = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = old, 1500);
+        }
+      }).catch(() => {});
+    }
+
+    function applyAIResult() {
+      const raw = document.getElementById('aiResultIn').value.trim();
+      if (!raw) { alert('Paste JSON from AI first.'); return; }
+      try {
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        const json = JSON.parse(jsonMatch[0]);
+        AI_TOOLS[currentAITool].apply(json);
+        pushHistory();
+        renderForm();
+        renderPreview();
+        updateScore();
+        saveState();
+        document.getElementById('aiResultIn').value = '';
+        alert('Applied to resume!');
+      } catch(e) {
+        alert('Invalid JSON. Make sure you paste the full JSON response from AI.');
+      }
+    }
+
+    // ===== ROLE TEMPLATES =====
+    const ROLE_TEMPLATES = {
+      frontend: {
+        label: 'Frontend Developer',
+        desc: 'Vue, Quasar, React, UI engineering',
+        targetRole: 'Frontend Developer',
+        skills: [
+          { cat: 'Programming Languages', items: ['TypeScript', 'JavaScript', 'SQL', 'HTML', 'CSS'] },
+          { cat: 'Frameworks & Libraries', items: ['Vue', 'Quasar', 'React', 'Next.js', 'Tailwind CSS'] },
+          { cat: 'Tools & Platforms', items: ['Git', 'Figma', 'Vite', 'CI/CD', 'Chrome DevTools', 'Agile/Scrum'] }
+        ],
+        bullets: {
+          experience: [
+            'Built responsive user interfaces in Vue and Quasar that improved page load performance by 35% and reduced bounce rate.',
+            'Developed reusable component library adopted by 3 teams, cutting frontend development time by 20%.',
+            'Integrated REST APIs for user authentication, data fetching, and real-time notification workflows.',
+            'Optimized critical rendering path, reducing First Contentful Paint from 2.8s to 1.4s on mobile devices.',
+            'Collaborated with UX designers and backend engineers to ship 12 features in a 6-month sprint cycle.',
+            'Set up CI/CD pipelines with GitHub Actions, reducing deployment time from 30 minutes to 5 minutes.'
+          ],
+          projects: [
+            'Designed and built a full-stack task management app with Vue, Quasar, and PostgreSQL serving 200+ monthly active users.',
+            'Developed a real-time chat application using WebSocket and Vue, supporting concurrent sessions and message persistence.',
+            'Created a responsive portfolio site with Next.js and Tailwind CSS, achieving 95+ Lighthouse performance score.'
+          ]
+        }
+      },
+      backend: {
+        label: 'Backend Developer',
+        desc: 'Node, FastAPI, TypeORM, databases',
+        targetRole: 'Backend Developer',
+        skills: [
+          { cat: 'Programming Languages', items: ['TypeScript', 'JavaScript', 'Python', 'Java', 'SQL'] },
+          { cat: 'Frameworks & ORMs', items: ['Node.js', 'FastAPI', 'TypeORM', 'Express', 'NestJS'] },
+          { cat: 'Databases', items: ['PostgreSQL', 'MySQL', 'SQLite', 'Redis'] },
+          { cat: 'Infrastructure & Tools', items: ['Docker', 'Azure', 'CI/CD', 'Git', 'Linux', 'Agile/Scrum'] }
+        ],
+        bullets: {
+          experience: [
+            'Architected and deployed 15+ RESTful microservices handling 50K requests per minute with 99.9% uptime.',
+            'Designed database schemas with TypeORM and wrote optimized queries, reducing average response time from 800ms to 120ms.',
+            'Implemented authentication and authorization with JWT and OAuth 2.0, securing access for 10K+ users.',
+            'Built automated data pipelines processing 2M+ records daily with error handling and retry logic.',
+            'Deployed containerized services on Azure App Service, reducing deployment time from 2 hours to 15 minutes via CI/CD.',
+            'Wrote comprehensive unit and integration tests achieving 92% code coverage across core services.'
+          ],
+          projects: [
+            'Built a scalable inventory management API with Node.js, TypeORM, and PostgreSQL, supporting real-time stock tracking for 5 warehouse locations.',
+            'Developed a data processing service with FastAPI and Python, handling 100K+ records per hour with sub-second latency.',
+            'Created a CLI tool in Java for automating database migrations across PostgreSQL and MySQL, adopted by 4 engineering teams.'
+          ]
+        }
+      },
+      data: {
+        label: 'Data Analyst',
+        desc: 'Analytics, visualization, insights',
+        targetRole: 'Data Analyst',
+        skills: [
+          { cat: 'Programming & Querying', items: ['Python', 'SQL', 'TypeScript', 'Java'] },
+          { cat: 'Visualization & BI', items: ['Tableau', 'Power BI', 'Matplotlib', 'Seaborn'] },
+          { cat: 'Analytics & Tools', items: ['Pandas', 'NumPy', 'Scikit-learn', 'Git', 'Jupyter', 'Figma', 'Agile/Scrum'] }
+        ],
+        bullets: {
+          experience: [
+            'Analyzed 500K+ customer records using SQL and Python, identifying 3 key churn drivers that reduced attrition by 12%.',
+            'Built automated dashboards in Power BI tracking 20+ KPIs, saving 8 hours per week of manual reporting.',
+            'Conducted A/B tests on landing page variants, resulting in a 22% increase in conversion rate.',
+            'Created monthly executive reports with actionable insights, influencing $2M in budget allocation decisions.',
+            'Cleaned and transformed raw data from 5 sources into a unified analytics pipeline with 99.5% data accuracy.',
+            'Presented findings to stakeholders across 4 departments, driving adoption of data-informed decision-making processes.'
+          ],
+          projects: [
+            'Analyzed 1M+ e-commerce transactions to build a customer segmentation model, identifying 4 high-value user groups with distinct purchasing patterns.',
+            'Built a predictive model for sales forecasting with 89% accuracy using time-series analysis and Python.',
+            'Created an interactive dashboard tracking marketing campaign ROI across 6 channels, reducing ad spend waste by 18%.'
+          ]
+        }
+      },
+      fullstack: {
+        label: 'Full-Stack Developer',
+        desc: 'Vue, Quasar, FastAPI, Prisma, Azure',
+        targetRole: 'Full-Stack Developer',
+        skills: [
+          { cat: 'Frontend', items: ['Vue', 'Quasar', 'TypeScript', 'JavaScript', 'HTML/CSS'] },
+          { cat: 'Backend', items: ['Node.js', 'FastAPI', 'Python', 'TypeORM', 'PostgreSQL', 'MySQL'] },
+          { cat: 'DevOps & Tools', items: ['Azure', 'Docker', 'Git', 'CI/CD', 'Figma', 'Bun', 'Agile/Scrum'] }
+        ],
+        bullets: {
+          experience: [
+            'Developed end-to-end features for a SaaS platform serving 5K+ users, from database design with TypeORM to Quasar UI components.',
+            'Built and maintained 20+ REST API endpoints with input validation, error handling, and rate limiting using Node.js and FastAPI.',
+            'Deployed full-stack applications on Azure App Service with CI/CD pipelines, achieving zero-downtime deployments.',
+            'Reduced API response times by 60% through query optimization, caching strategies, and connection pooling.',
+            'Led code reviews and mentored 2 junior developers, improving team velocity by 25% over 3 sprints.',
+            'Implemented automated testing with Jest and Cypress, increasing code coverage from 45% to 92%.'
+          ],
+          projects: [
+            'Built a full-stack project management tool with Vue, Quasar, TypeORM, and PostgreSQL, supporting team collaboration for 50+ users.',
+            'Developed an e-commerce platform with Stripe integration, user authentication, and admin dashboard handling 1K+ products.',
+            'Created a real-time analytics dashboard with Chart.js and FastAPI, visualizing 100K+ data points with sub-second load times.'
+          ]
+        }
+      }
+    };
+
+    // ===== WIZARD STATE =====
+    let wizardRole = null;
+    let wizardSkills = [];
+
+    function openWizard() {
+      document.getElementById('wizardOverlay').classList.add('active');
+      renderRoleGrid();
+      wizardRole = null;
+      wizardSkills = [];
+      showWizardStep(1);
+    }
+
+    function closeWizard() {
+      document.getElementById('wizardOverlay').classList.remove('active');
+    }
+
+    function showWizardStep(n) {
+      document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('wStep' + n).classList.add('active');
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('wp' + i).classList.toggle('active', i <= n);
+      }
+      if (n === 2) renderSkillPicker();
+      if (n === 3) renderWizardPrompt();
+    }
+
+    function wizardNext(n) {
+      if (n === 1 && wizardRole) showWizardStep(2);
+      else if (n === 2 && wizardSkills.length > 0) showWizardStep(3);
+    }
+
+    function wizardPrev(n) {
+      if (n === 2) showWizardStep(1);
+      else if (n === 3) showWizardStep(2);
+    }
+
+    function renderRoleGrid() {
+      const grid = document.getElementById('roleGrid');
+      grid.innerHTML = Object.entries(ROLE_TEMPLATES).map(([key, t]) => `
+        <div class="role-card" data-role="${key}" onclick="selectRole('${key}')">
+          <div class="role-card-title">${t.label}</div>
+          <div class="role-card-desc">${t.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectRole(key) {
+      wizardRole = key;
+      document.querySelectorAll('.role-card').forEach(c => c.classList.toggle('selected', c.dataset.role === key));
+      document.getElementById('wNext1').disabled = false;
+    }
+
+    function renderSkillPicker() {
+      const tpl = ROLE_TEMPLATES[wizardRole];
+      if (!tpl) return;
+      const picker = document.getElementById('skillPicker');
+      picker.innerHTML = tpl.skills.map(g => `
+        <div class="skill-group-title">${g.cat}</div>
+        ${g.items.map(s => `
+          <div class="skill-item ${wizardSkills.includes(s) ? 'selected' : ''}" data-skill="${s}" onclick="toggleSkill('${s}')">
+            <div class="skill-check">${wizardSkills.includes(s) ? '✓' : ''}</div>
+            <span>${s}</span>
+          </div>
+        `).join('')}
+      `).join('');
+      renderSelectedSkills();
+    }
+
+    function toggleSkill(skill) {
+      const idx = wizardSkills.indexOf(skill);
+      if (idx >= 0) wizardSkills.splice(idx, 1);
+      else wizardSkills.push(skill);
+      renderSkillPicker();
+    }
+
+    function renderSelectedSkills() {
+      document.getElementById('selectedSkills').innerHTML = wizardSkills.map(s => `
+        <span class="selected-skill-tag">${s}<span class="remove" onclick="toggleSkill('${s}')">×</span></span>
+      `).join('');
+      document.getElementById('wNext2').disabled = wizardSkills.length === 0;
+    }
+
+    function renderWizardPrompt() {
+      const tpl = ROLE_TEMPLATES[wizardRole];
+      if (!tpl) return;
+      const skills = tpl.skills.map(g => ({
+        category: g.cat,
+        items: g.items.filter(s => wizardSkills.includes(s)).join(', ')
+      })).filter(s => s.items);
+      const selectedSkills = skills.map(s => s.items).join(', ');
+      const prompt = `You are a senior resume writer conducting a structured interview to build a complete resume.
+
+IMPORTANT — Follow this exact process:
+
+STEP 1 — Interview the candidate.
+Ask these questions ONE AT A TIME. Wait for each answer before asking the next question.
+Do NOT ask all questions at once. Ask them sequentially.
+
+Questions to ask in order:
+1. What is your full name?
+2. What is your contact info? (phone | email | LinkedIn | GitHub)
+3. What role are you applying for?
+4. Tell me about your education. Include: university, degree, GPA, dates, relevant coursework, activities.
+5. Tell me about your work experience. For each: role, company, location, dates, and 2-3 impact-focused bullets.
+6. What are your technical skills? (languages, frameworks, tools, databases)
+7. Tell me about your projects. For each: name, tech stack, dates, what you built.
+8. Tell me about your leadership or extracurricular experience. For each: role, organization, dates, and 1-3 highlights.
+9. List any certifications. Include: name, issuer, date. If none, say none.
+10. List any languages you speak and your proficiency. If none, say none.
+11. Write a personal statement about yourself. Keep it 3-4 sentences, formal, human-like, and aligned to the target role.
+
+STEP 2 — After receiving all answers, output the resume as JSON.
+At the very end of the conversation, output ONLY valid JSON — no extra text before or after.
+
+Quality rules for the resume:
+- Write in a professional, formal, human-sounding tone.
+- Do not sound robotic, vague, inflated, or obviously AI-generated.
+- Avoid weak verbs: supported, helped, responsible for, involved in, worked on.
+- Prefer strong verbs: built, developed, designed, implemented, optimized, delivered, reduced, improved, automated, led.
+- Keep the resume optimized for 1 page max.
+- Prefer 2 project entries max.
+- Prefer 3 bullets per project max, under 24 words each.
+- Separate skills into proper categories.
+- Use specific metrics and outcomes when supported by the candidate's answers.
+- If the candidate's answers are incomplete, use reasonable placeholders they can edit later.
+
+Context for this candidate:
+- Target role: ${tpl.targetRole}
+- Selected skills: ${selectedSkills || 'Use the template defaults for this role'}
+
+JSON output schema (output this ONLY at the end, after all interview questions are answered):
+{
+  "name": "string",
+  "contact": "string",
+  "targetRole": "string",
+  "personalStatement": "string",
+  "education": [{"school": "string", "degree": "string", "gpa": "string", "start": "string", "end": "string", "coursework": "string", "activities": "string"}],
+  "experience": [{"company": "string", "role": "string", "start": "string", "end": "string", "location": "string", "bullets": ["string"]}],
+  "skills": [{"category": "string", "items": "string"}],
+  "projects": [{"name": "string", "tech": "string", "date": "string", "bullets": ["string"]}],
+  "leadership": [{"organization": "string", "role": "string", "start": "string", "end": "string", "bullets": ["string"]}],
+  "certifications": [{"name": "string", "issuer": "string", "date": "string"}],
+  "languages": [{"name": "string", "level": "string"}]
+}`;
+      document.getElementById('wizardPromptOut').value = prompt;
+      document.getElementById('wizardResultIn').value = '';
+    }
+
+    function copyWizardPrompt() {
+      const box = document.getElementById('wizardPromptOut');
+      box.select();
+      box.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(box.value).then(() => {
+        const btn = event?.target;
+        if (btn) {
+          const old = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = old, 1500);
+        }
+      }).catch(() => {});
+    }
+
+    function wizardApplyAI() {
+      const raw = document.getElementById('wizardResultIn').value.trim();
+      if (!raw) { alert('Paste JSON from AI first.'); return; }
+      try {
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found');
+        const json = JSON.parse(jsonMatch[0]);
+        Object.assign(state, {
+          name: json.name ?? state.name,
+          contact: json.contact ?? state.contact,
+          targetRole: json.targetRole ?? state.targetRole,
+          summary: json.personalStatement ?? json.summary ?? state.summary,
+          sectionOrder: mergeSectionOrder(json.sectionOrder ?? state.sectionOrder),
+          education: json.education ?? state.education,
+          experience: json.experience ?? state.experience,
+          skills: json.skills ?? state.skills,
+          projects: json.projects ?? state.projects,
+          leadership: json.leadership ?? state.leadership,
+          certifications: json.certifications ?? state.certifications,
+          languages: json.languages ?? state.languages,
+          sectionVisibility: mergeSectionVisibility(json.sectionVisibility ?? state.sectionVisibility),
+        });
+        closeWizard();
+        pushHistory();
+        renderForm();
+        renderPreview();
+        updateScore();
+        saveState();
+        alert('Resume created!');
+      } catch(e) {
+        alert('Invalid JSON. Make sure you paste the full JSON response from AI.');
+      }
+    }
+
+    // ===== STATE =====
+    let state = {
+      name: '',
+      contact: '',
+      targetRole: '',
+      summary: '',
+      fontSizeStep: 0,
+      fontFamily: 'Times New Roman, Georgia, serif',
+      photo: '',
+      aiInsights: {},
+      sectionOrder: [],
+      sectionVisibility: {},
+      education: [],
+      experience: [],
+      skills: [],
+      projects: [],
+      leadership: [],
+      certifications: [],
+      languages: []
+    };
+    let history = [];
+    let historyIndex = -1;
+    let saveTimeout = null;
+
+    // ===== INIT =====
+    function init() {
+      loadState();
+      renderForm();
+      renderPreview();
+      updateScore();
+      autoExpandAllTextareas();
+    }
+
+    function autoExpandTextarea(el) {
+      if (!el) return;
+      if (el.offsetParent === null) {
+        el.style.height = '';
+        return;
+      }
+      el.style.height = '0px';
+      el.style.height = el.scrollHeight + 'px';
+      requestAnimationFrame(function() {
+        if (!document.body.contains(el)) return;
+        if (el.offsetParent === null) return;
+        el.style.height = '0px';
+        el.style.height = el.scrollHeight + 'px';
+      });
+    }
+
+    function autoExpandTextareasIn(root) {
+      if (!root) return;
+      root.querySelectorAll('.form-textarea').forEach(function(el) {
+        autoExpandTextarea(el);
+      });
+    }
+
+    function autoExpandAllTextareas() {
+      autoExpandTextareasIn(document);
+    }
+
+    function getDefaultSectionOrder() {
+      return ['personal', 'summary', 'education', 'experience', 'projects', 'skills', 'leadership', 'certifications', 'languages'];
+    }
+
+    function mergeSectionOrder(savedOrder) {
+      const defaults = getDefaultSectionOrder();
+      const incoming = Array.isArray(savedOrder) ? savedOrder.filter(section => defaults.includes(section)) : [];
+      return incoming.concat(defaults.filter(section => !incoming.includes(section)));
+    }
+
+    function getDefaultSectionVisibility() {
+      return {
+        personal: true,
+        summary: true,
+        education: true,
+        experience: true,
+        projects: true,
+        skills: true,
+        leadership: true,
+        certifications: true,
+        languages: true,
+      };
+    }
+
+    function mergeSectionVisibility(savedVisibility) {
+      return Object.assign(getDefaultSectionVisibility(), savedVisibility || {});
+    }
+
+    // ===== LOCALSTORAGE =====
+    function saveState() {
+      localStorage.setItem('resume_state', JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('resume_state');
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+        } catch(e) {}
+      }
+      if (!state.name && !state.education.length) {
+        state = getDefaultState();
+      }
+      if (!state.summary) state.summary = '';
+      if (!state.aiInsights) state.aiInsights = {};
+      if (typeof state.fontSizeStep !== 'number') state.fontSizeStep = 0;
+      if (!state.fontFamily) state.fontFamily = 'Times New Roman, Georgia, serif';
+      state.sectionOrder = mergeSectionOrder(state.sectionOrder);
+      state.sectionVisibility = mergeSectionVisibility(state.sectionVisibility);
+      state.education = Array.isArray(state.education) ? state.education : [];
+      state.experience = Array.isArray(state.experience) ? state.experience : [];
+      state.skills = Array.isArray(state.skills) ? state.skills : [];
+      state.projects = Array.isArray(state.projects) ? state.projects : [];
+      state.leadership = Array.isArray(state.leadership) ? state.leadership : [];
+      state.certifications = Array.isArray(state.certifications) ? state.certifications : [];
+      state.languages = Array.isArray(state.languages) ? state.languages : [];
+    }
+
+    function getDefaultState() {
+      return {
+        name: '',
+        contact: '',
+        targetRole: '',
+        summary: '',
+        fontSizeStep: 0,
+        fontFamily: 'Times New Roman, Georgia, serif',
+        photo: '',
+        aiInsights: {},
+        sectionOrder: getDefaultSectionOrder(),
+        sectionVisibility: getDefaultSectionVisibility(),
+        education: [{ school: '', degree: '', gpa: '', start: '', end: '', coursework: '', activities: '' }],
+        experience: [{ company: '', role: '', start: '', end: '', location: '', bullets: [''] }],
+        skills: [{ category: 'Programming Languages', items: '' }, { category: 'Frameworks & Tools', items: '' }],
+        projects: [{ name: '', tech: '', date: '', bullets: [''] }],
+        leadership: [{ organization: '', role: '', start: '', end: '', bullets: [''] }],
+        certifications: [{ name: '', issuer: '', date: '' }],
+        languages: [{ name: '', level: '' }],
+      };
+    }
+
+    // ===== HISTORY (UNDO/REDO) =====
+    function pushHistory() {
+      history = history.slice(0, historyIndex + 1);
+      history.push(JSON.stringify(state));
+      historyIndex = history.length - 1;
+      if (history.length > 50) {
+        history.shift();
+        historyIndex--;
+      }
+      updateHistoryButtons();
+    }
+
+    function undo() {
+      if (historyIndex > 0) {
+        historyIndex--;
+        state = JSON.parse(history[historyIndex]);
+        renderForm();
+        renderPreview();
+        updateScore();
+        saveState();
+        updateHistoryButtons();
+      }
+    }
+
+    function redo() {
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        state = JSON.parse(history[historyIndex]);
+        renderForm();
+        renderPreview();
+        updateScore();
+        saveState();
+        updateHistoryButtons();
+      }
+    }
+
+    function updateHistoryButtons() {
+      document.getElementById('undoBtn').disabled = historyIndex <= 0;
+      document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+    }
+
+    // ===== FORM CHANGE =====
+    function onFormChange() {
+      state.name = document.getElementById('f-name').value;
+      state.contact = document.getElementById('f-contact').value;
+      state.targetRole = document.getElementById('f-target').value;
+      renderPreview();
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        pushHistory();
+        saveState();
+        updateScore();
+      }, 500);
+    }
+
+    function onSummaryChange() {
+      state.summary = document.getElementById('f-summary').value;
+      renderPreview();
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        pushHistory();
+        saveState();
+        updateScore();
+      }, 500);
+    }
+
+    // ===== PHOTO =====
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        state.photo = e.target.result;
+        renderPreview();
+        pushHistory();
+        saveState();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ===== TOGGLE SECTION =====
+    function toggleSection(header) {
+      const section = header.parentElement;
+      section.classList.toggle('open');
+      if (section.classList.contains('open')) {
+        requestAnimationFrame(function() {
+          autoExpandTextareasIn(section);
+        });
+      }
+    }
+
+    function toggleSectionVisibility(event, section) {
+      event.stopPropagation();
+      state.sectionVisibility[section] = !state.sectionVisibility[section];
+      renderForm();
+      renderPreview();
+      pushHistory();
+      saveState();
+      updateScore();
+    }
+
+    function syncSectionVisibilityButtons() {
+      Object.entries(state.sectionVisibility).forEach(([section, visible]) => {
+        const btn = document.getElementById('toggle-' + section);
+        if (!btn) return;
+        btn.textContent = visible ? 'On' : 'Off';
+        btn.classList.toggle('off', !visible);
+      });
+    }
+
+    // ===== RENDER FORM =====
+    function renderForm() {
+      state.sectionOrder = mergeSectionOrder(state.sectionOrder);
+      state.sectionVisibility = mergeSectionVisibility(state.sectionVisibility);
+      document.getElementById('f-name').value = state.name;
+      document.getElementById('f-contact').value = state.contact;
+      document.getElementById('f-target').value = state.targetRole || '';
+      document.getElementById('f-summary').value = state.summary || '';
+
+      renderEduForm();
+      renderExpForm();
+      renderSkillForm();
+      renderProjForm();
+      renderLeadershipForm();
+      renderCertificationForm();
+      renderLanguageForm();
+      syncSectionVisibilityButtons();
+      applySectionOrder();
+      autoExpandAllTextareas();
+    }
+
+    function applySectionOrder() {
+      const panel = document.getElementById('formPanel');
+      state.sectionOrder.forEach(section => {
+        const node = panel.querySelector('.form-section[data-section="' + section + '"]');
+        if (node) panel.appendChild(node);
+      });
+    }
+
+    function renderEduForm() {
+      const c = document.getElementById('eduEntries');
+      c.innerHTML = state.education.map((e, i) => `
+        <div class="entry-card" draggable="true" data-section="education" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${e.school || 'New Education'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('education', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-group"><label class="form-label">School & Degree</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'school',this.value);autoExpandTextarea(this)" placeholder="University Name, B.S. in Computer Science">${esc(e.school)}</textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">GPA</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'gpa',this.value);autoExpandTextarea(this)" placeholder="3.85 / 4.00">${esc(e.gpa)}</textarea></div>
+              <div class="form-group"><label class="form-label">Start</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'start',this.value);autoExpandTextarea(this)" placeholder="Aug 2022">${esc(e.start)}</textarea></div>
+              <div class="form-group"><label class="form-label">End</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'end',this.value);autoExpandTextarea(this)" placeholder="May 2026">${esc(e.end)}</textarea></div>
+            </div>
+            <div class="form-group"><label class="form-label">Coursework</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'coursework',this.value);autoExpandTextarea(this)" placeholder="Data Structures, Algorithms, ...">${esc(e.coursework)}</textarea></div>
+            <div class="form-group"><label class="form-label">Activities</label><textarea class="form-textarea" rows="1" oninput="updateEdu(${i},'activities',this.value);autoExpandTextarea(this)" placeholder="Student Club, Hackathon, ...">${esc(e.activities)}</textarea></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSkillForm() {
+      const c = document.getElementById('skillEntries');
+      c.innerHTML = state.skills.map((s, i) => `
+        <div class="entry-card" draggable="true" data-section="skills" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${s.category || 'New Category'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('skills', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-group"><label class="form-label">Category</label><textarea class="form-textarea" rows="1" oninput="updateSkill(${i},'category',this.value);autoExpandTextarea(this)" placeholder="Programming Languages">${esc(s.category)}</textarea></div>
+            <div class="form-group"><label class="form-label">Skills (comma separated)</label><textarea class="form-textarea" oninput="updateSkill(${i},'items',this.value);autoExpandTextarea(this)" placeholder="JavaScript, TypeScript, Python">${esc(s.items)}</textarea></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderExpForm() {
+      const c = document.getElementById('expEntries');
+      c.innerHTML = state.experience.map((e, i) => `
+        <div class="entry-card" draggable="true" data-section="experience" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${e.role || e.company || 'New Experience'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('experience', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Role</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'role',this.value);autoExpandTextarea(this)" placeholder="Software Engineer Intern">${esc(e.role)}</textarea></div>
+              <div class="form-group"><label class="form-label">Company</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'company',this.value);autoExpandTextarea(this)" placeholder="Company Name">${esc(e.company)}</textarea></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Location</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'location',this.value);autoExpandTextarea(this)" placeholder="Bangkok, Thailand">${esc(e.location)}</textarea></div>
+              <div class="form-group"><label class="form-label">Start</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'start',this.value);autoExpandTextarea(this)" placeholder="Jun 2025">${esc(e.start)}</textarea></div>
+              <div class="form-group"><label class="form-label">End</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'end',this.value);autoExpandTextarea(this)" placeholder="Aug 2025">${esc(e.end)}</textarea></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bullet Points (one per line)</label>
+              <textarea class="form-textarea" rows="4" oninput="updateExpBullets(${i},this.value);autoExpandTextarea(this)" placeholder="Built internal dashboard for operations team&#10;Reduced manual reporting time by 60%">${esc((e.bullets || []).join('\n'))}</textarea>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderProjForm() {
+      const c = document.getElementById('projEntries');
+      c.innerHTML = state.projects.map((p, i) => `
+        <div class="entry-card" draggable="true" data-section="projects" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${p.name || 'New Project'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('projects', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Project Name</label><textarea class="form-textarea" rows="1" oninput="updateProj(${i},'name',this.value);autoExpandTextarea(this)" placeholder="Project Name">${esc(p.name)}</textarea></div>
+              <div class="form-group"><label class="form-label">Tech Stack</label><textarea class="form-textarea" rows="1" oninput="updateProj(${i},'tech',this.value);autoExpandTextarea(this)" placeholder="React, Firebase">${esc(p.tech)}</textarea></div>
+              <div class="form-group"><label class="form-label">Date</label><textarea class="form-textarea" rows="1" oninput="updateProj(${i},'date',this.value);autoExpandTextarea(this)" placeholder="Jan 2025">${esc(p.date)}</textarea></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bullet Points (one per line)</label>
+              <textarea class="form-textarea" rows="4" oninput="updateProjBullets(${i},this.value);autoExpandTextarea(this)" placeholder="Built full-stack app for discovering and saving places&#10;Designed auth and real-time data flows&#10;Deployed with cloud-based backend">${esc((p.bullets||[]).join('\n'))}</textarea>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderLeadershipForm() {
+      const c = document.getElementById('leadEntries');
+      c.innerHTML = state.leadership.map((e, i) => `
+        <div class="entry-card" draggable="true" data-section="leadership" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${e.role || e.organization || 'New Leadership'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('leadership', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Role</label><textarea class="form-textarea" rows="1" oninput="updateLeadership(${i},'role',this.value);autoExpandTextarea(this)" placeholder="President">${esc(e.role)}</textarea></div>
+              <div class="form-group"><label class="form-label">Organization</label><textarea class="form-textarea" rows="1" oninput="updateLeadership(${i},'organization',this.value);autoExpandTextarea(this)" placeholder="Computer Science Club">${esc(e.organization)}</textarea></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Start</label><textarea class="form-textarea" rows="1" oninput="updateLeadership(${i},'start',this.value);autoExpandTextarea(this)" placeholder="2024">${esc(e.start)}</textarea></div>
+              <div class="form-group"><label class="form-label">End</label><textarea class="form-textarea" rows="1" oninput="updateLeadership(${i},'end',this.value);autoExpandTextarea(this)" placeholder="Present">${esc(e.end)}</textarea></div>
+            </div>
+            <div class="form-group"><label class="form-label">Highlights (one per line)</label><textarea class="form-textarea" rows="4" oninput="updateLeadershipBullets(${i},this.value);autoExpandTextarea(this)" placeholder="Led a 20-member team&#10;Organized campus workshop for 150 attendees">${esc((e.bullets || []).join('\n'))}</textarea></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCertificationForm() {
+      const c = document.getElementById('certEntries');
+      c.innerHTML = state.certifications.map((e, i) => `
+        <div class="entry-card" draggable="true" data-section="certifications" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${e.name || 'New Certification'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('certifications', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-group"><label class="form-label">Certification</label><textarea class="form-textarea" rows="1" oninput="updateCertification(${i},'name',this.value);autoExpandTextarea(this)" placeholder="AWS Certified Cloud Practitioner">${esc(e.name)}</textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Issuer</label><textarea class="form-textarea" rows="1" oninput="updateCertification(${i},'issuer',this.value);autoExpandTextarea(this)" placeholder="Amazon Web Services">${esc(e.issuer)}</textarea></div>
+              <div class="form-group"><label class="form-label">Date</label><textarea class="form-textarea" rows="1" oninput="updateCertification(${i},'date',this.value);autoExpandTextarea(this)" placeholder="2025">${esc(e.date)}</textarea></div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderLanguageForm() {
+      const c = document.getElementById('langEntries');
+      c.innerHTML = state.languages.map((e, i) => `
+        <div class="entry-card" draggable="true" data-section="languages" data-index="${i}"
+          ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+          <div class="entry-card-header">
+            <span class="drag-handle">⠿</span>
+            <span class="entry-card-title">${e.name || 'New Language'}</span>
+            <div class="entry-card-actions">
+              <button class="entry-card-btn" onclick="toggleEntryCard(this)">▼</button>
+              <button class="entry-card-btn delete" onclick="removeEntry('languages', ${i})">×</button>
+            </div>
+          </div>
+          <div class="entry-card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Language</label><textarea class="form-textarea" rows="1" oninput="updateLanguage(${i},'name',this.value);autoExpandTextarea(this)" placeholder="Thai">${esc(e.name)}</textarea></div>
+              <div class="form-group"><label class="form-label">Level</label><textarea class="form-textarea" rows="1" oninput="updateLanguage(${i},'level',this.value);autoExpandTextarea(this)" placeholder="Native / Fluent / Intermediate">${esc(e.level)}</textarea></div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== UPDATE FUNCTIONS =====
+    function updateEdu(i, key, val) { state.education[i][key] = val; scheduleUpdate(); }
+    function updateExp(i, key, val) { state.experience[i][key] = val; scheduleUpdate(); }
+    function updateSkill(i, key, val) { state.skills[i][key] = val; scheduleUpdate(); }
+    function updateProj(i, key, val) { state.projects[i][key] = val; scheduleUpdate(); }
+    function updateLeadership(i, key, val) { state.leadership[i][key] = val; scheduleUpdate(); }
+    function updateCertification(i, key, val) { state.certifications[i][key] = val; scheduleUpdate(); }
+    function updateLanguage(i, key, val) { state.languages[i][key] = val; scheduleUpdate(); }
+    function updateExpBullets(i, val) { state.experience[i].bullets = val.split('\n').filter(l => l.trim()); scheduleUpdate(); }
+    function updateProjBullets(i, val) { state.projects[i].bullets = val.split('\n').filter(l => l.trim()); scheduleUpdate(); }
+    function updateLeadershipBullets(i, val) { state.leadership[i].bullets = val.split('\n').filter(l => l.trim()); scheduleUpdate(); }
+
+    function scheduleUpdate() {
+      renderPreview();
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        pushHistory();
+        saveState();
+        updateScore();
+      }, 500);
+    }
+
+    // ===== ADD/REMOVE =====
+    function addEduEntry() { state.education.push({ school: '', degree: '', gpa: '', start: '', end: '', coursework: '', activities: '' }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addExpEntry() { state.experience.push({ company: '', role: '', start: '', end: '', location: '', bullets: [''] }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addSkillEntry() { state.skills.push({ category: '', items: '' }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addProjEntry() { state.projects.push({ name: '', tech: '', date: '', bullets: [''] }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addLeadershipEntry() { state.leadership.push({ organization: '', role: '', start: '', end: '', bullets: [''] }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addCertificationEntry() { state.certifications.push({ name: '', issuer: '', date: '' }); renderForm(); pushHistory(); saveState(); updateScore(); }
+    function addLanguageEntry() { state.languages.push({ name: '', level: '' }); renderForm(); pushHistory(); saveState(); updateScore(); }
+
+    function removeEntry(section, index) {
+      state[section].splice(index, 1);
+      renderForm();
+      renderPreview();
+      pushHistory();
+      saveState();
+      updateScore();
+    }
+
+    function toggleEntryCard(btn) {
+      const card = btn.closest('.entry-card');
+      card.classList.toggle('open');
+      if (card.classList.contains('open')) {
+        requestAnimationFrame(function() {
+          autoExpandTextareasIn(card);
+        });
+      }
+    }
+
+    // ===== DRAG & DROP =====
+    let dragSection = null, dragIndex = null;
+    let draggedTopLevelSection = null;
+
+    function onSectionDragStart(e) {
+      if (e.target.closest('.entry-card')) {
+        return;
+      }
+      draggedTopLevelSection = e.currentTarget.dataset.section;
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTopLevelSection);
+    }
+
+    function onSectionDragOver(e) {
+      if (!draggedTopLevelSection) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function onSectionDrop(e) {
+      if (!draggedTopLevelSection) return;
+      e.preventDefault();
+      const target = e.currentTarget;
+      target.classList.remove('drag-over');
+      const targetSection = target.dataset.section;
+      if (!targetSection || targetSection === draggedTopLevelSection) return;
+      const nextOrder = state.sectionOrder.slice();
+      const from = nextOrder.indexOf(draggedTopLevelSection);
+      const to = nextOrder.indexOf(targetSection);
+      if (from < 0 || to < 0) return;
+      const [moved] = nextOrder.splice(from, 1);
+      nextOrder.splice(to, 0, moved);
+      state.sectionOrder = nextOrder;
+      renderForm();
+      renderPreview();
+      pushHistory();
+      saveState();
+      updateScore();
+    }
+
+    function onSectionDragEnd() {
+      draggedTopLevelSection = null;
+      document.querySelectorAll('.form-section.dragging, .form-section.drag-over').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+    }
+
+    function onDragStart(e) {
+      e.stopPropagation();
+      dragSection = e.currentTarget.dataset.section;
+      dragIndex = parseInt(e.currentTarget.dataset.index);
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSection + ':' + dragIndex);
+    }
+
+    function onDragOver(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      e.currentTarget.closest('.entry-card').classList.add('drag-over');
+    }
+
+    function onDrop(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      const target = e.currentTarget.closest('.entry-card');
+      target.classList.remove('drag-over');
+      const targetSection = target.dataset.section;
+      const targetIndex = parseInt(target.dataset.index);
+      if (dragSection === targetSection && dragIndex !== targetIndex) {
+        const arr = state[dragSection];
+        const [item] = arr.splice(dragIndex, 1);
+        arr.splice(targetIndex, 0, item);
+        renderForm();
+        renderPreview();
+        pushHistory();
+        saveState();
+      }
+    }
+
+    function onDragEnd(e) {
+      e.stopPropagation();
+      document.querySelectorAll('.dragging, .drag-over').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+    }
+
+    // ===== RENDER PREVIEW =====
+    function renderPreview() {
+      const page = document.getElementById('resumePage');
+      state.sectionOrder = mergeSectionOrder(state.sectionOrder);
+      page.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+      page.style.setProperty('--resume-font-family', state.fontFamily);
+      document.getElementById('fontFamilySelect').value = state.fontFamily;
+
+      document.querySelector('.r-header').style.display = isSectionVisible('personal') ? 'grid' : 'none';
+      document.getElementById('rName').textContent = state.name || 'YOUR NAME';
+      document.getElementById('rContact').textContent = state.contact || '+66 x-xxx-xxxx | email@example.com';
+
+      if (state.photo) {
+        document.getElementById('rPhoto').innerHTML = '<img src="' + state.photo + '" alt="Photo" />';
+      } else {
+        document.getElementById('rPhoto').innerHTML = '<span>Photo</span>';
+      }
+
+      document.getElementById('rSummary').innerHTML = isSectionVisible('summary') && state.summary ? `<div class="r-section"><div class="r-section-title">Personal Statement</div><div class="r-summary">${esc(state.summary)}</div></div>` : '';
+      renderEduPreview();
+      renderExpPreview();
+      renderProjPreview();
+      renderSkillsPreview();
+      renderLeadershipPreview();
+      renderCertificationPreview();
+      renderLanguagePreview();
+      applyPreviewSectionOrder();
+    }
+
+    function applyPreviewSectionOrder() {
+      const page = document.getElementById('resumePage');
+      state.sectionOrder.forEach(section => {
+        const node = document.getElementById('r' + section.charAt(0).toUpperCase() + section.slice(1));
+        if (node) page.appendChild(node);
+      });
+    }
+
+    function isSectionVisible(section) {
+      state.sectionVisibility = mergeSectionVisibility(state.sectionVisibility);
+      return state.sectionVisibility[section] !== false;
+    }
+
+    function increaseResumeFont() {
+      state.fontSizeStep = Math.min(4, (state.fontSizeStep || 0) + 1);
+      renderPreview();
+      saveState();
+    }
+
+    function decreaseResumeFont() {
+      state.fontSizeStep = Math.max(-4, (state.fontSizeStep || 0) - 1);
+      renderPreview();
+      saveState();
+    }
+
+    function setResumeFontFamily(value) {
+      state.fontFamily = value;
+      renderPreview();
+      saveState();
+    }
+
+    function renderEduPreview() {
+      const entries = state.education.filter(e => e.school);
+      if (!isSectionVisible('education') || !entries.length) { document.getElementById('rEducation').innerHTML = ''; return; }
+      document.getElementById('rEducation').innerHTML = '<div class="r-section"><div class="r-section-title">Education</div>' + entries.map(e => `
+        <div class="r-entry r-compact">
+          <div class="r-topline"><div class="r-left">${esc(e.school)}${e.gpa ? ', GPA: ' + esc(e.gpa) : ''}</div><div class="r-right">${esc(e.start)}${e.end ? ' - ' + esc(e.end) : ''}</div></div>
+          ${e.coursework ? '<div class="r-meta"><strong>Relevant Coursework:</strong> ' + esc(e.coursework) + '</div>' : ''}
+          ${e.activities ? '<div class="r-meta"><strong>Activities:</strong> ' + esc(e.activities) + '</div>' : ''}
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function renderSkillsPreview() {
+      const entries = state.skills.filter(s => s.category && s.items);
+      if (!isSectionVisible('skills') || !entries.length) { document.getElementById('rSkills').innerHTML = ''; return; }
+      document.getElementById('rSkills').innerHTML = '<div class="r-section"><div class="r-section-title">Technical Skills</div><div class="r-skills">' + entries.map(s => `
+        <div><strong>${esc(s.category)}:</strong> ${esc(s.items)}</div>
+      `).join('') + '</div></div>';
+    }
+
+    function renderExpPreview() {
+      const entries = state.experience.filter(e => e.role || e.company);
+      if (!isSectionVisible('experience') || !entries.length) { document.getElementById('rExperience').innerHTML = ''; return; }
+      document.getElementById('rExperience').innerHTML = '<div class="r-section"><div class="r-section-title">Experience</div>' + entries.map(e => `
+        <div class="r-entry">
+          <div class="r-topline"><div class="r-left">${esc(e.role)}${e.company ? ' | ' + esc(e.company) : ''}</div><div class="r-right">${esc(e.start)}${e.end ? ' - ' + esc(e.end) : ''}</div></div>
+          ${e.location ? '<div class="r-tech-stack">' + esc(e.location) + '</div>' : ''}
+          ${(e.bullets||[]).filter(b=>b.trim()).length ? '<ul class="r-ul">' + (e.bullets||[]).filter(b=>b.trim()).map(b => '<li class="r-li">' + esc(b) + '</li>').join('') + '</ul>' : ''}
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function renderProjPreview() {
+      const entries = state.projects.filter(p => p.name);
+      if (!isSectionVisible('projects') || !entries.length) { document.getElementById('rProjects').innerHTML = ''; return; }
+      document.getElementById('rProjects').innerHTML = '<div class="r-section"><div class="r-section-title">Projects</div>' + entries.map(p => `
+        <div class="r-entry">
+          <div class="r-topline"><div class="r-left">${esc(p.name)}</div><div class="r-right">${esc(p.date)}</div></div>
+          ${p.tech ? '<div class="r-tech-stack">' + esc(p.tech) + '</div>' : ''}
+          ${(p.bullets||[]).filter(b=>b.trim()).length ? '<ul class="r-ul">' + (p.bullets||[]).filter(b=>b.trim()).map(b => '<li class="r-li">' + esc(b) + '</li>').join('') + '</ul>' : ''}
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function renderLeadershipPreview() {
+      const entries = state.leadership.filter(e => e.role || e.organization);
+      if (!isSectionVisible('leadership') || !entries.length) { document.getElementById('rLeadership').innerHTML = ''; return; }
+      document.getElementById('rLeadership').innerHTML = '<div class="r-section"><div class="r-section-title">Leadership</div>' + entries.map(e => `
+        <div class="r-entry">
+          <div class="r-topline"><div class="r-left">${esc(e.role)}${e.organization ? ' | ' + esc(e.organization) : ''}</div><div class="r-right">${esc(e.start)}${e.end ? ' - ' + esc(e.end) : ''}</div></div>
+          ${(e.bullets||[]).filter(b=>b.trim()).length ? '<ul class="r-ul">' + (e.bullets||[]).filter(b=>b.trim()).map(b => '<li class="r-li">' + esc(b) + '</li>').join('') + '</ul>' : ''}
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function renderCertificationPreview() {
+      const entries = state.certifications.filter(e => e.name);
+      if (!isSectionVisible('certifications') || !entries.length) { document.getElementById('rCertifications').innerHTML = ''; return; }
+      document.getElementById('rCertifications').innerHTML = '<div class="r-section"><div class="r-section-title">Certifications</div><div class="r-skills">' + entries.map(e => `
+        <div><strong>${esc(e.name)}</strong>${e.issuer ? ' - ' + esc(e.issuer) : ''}${e.date ? ' (' + esc(e.date) + ')' : ''}</div>
+      `).join('') + '</div></div>';
+    }
+
+    function renderLanguagePreview() {
+      const entries = state.languages.filter(e => e.name);
+      if (!isSectionVisible('languages') || !entries.length) { document.getElementById('rLanguages').innerHTML = ''; return; }
+      document.getElementById('rLanguages').innerHTML = '<div class="r-section"><div class="r-section-title">Languages</div><div class="r-skills">' + entries.map(e => `
+        <div><strong>${esc(e.name)}</strong>${e.level ? ': ' + esc(e.level) : ''}</div>
+      `).join('') + '</div></div>';
+    }
+
+    function renderAIInsights() {
+      const container = document.getElementById('aiInsights');
+      const insights = Object.values(state.aiInsights || {});
+      if (!insights.length) {
+        container.innerHTML = '<div class="feedback-desc">No AI insights applied yet.</div>';
+        return;
+      }
+      container.innerHTML = insights.map(insight => `<div class="insight-block"><div class="feedback-title">${esc(insight.title || 'Insight')}</div><pre>${esc(JSON.stringify(insight.payload, null, 2))}</pre></div>`).join('');
+    }
+
+    function renderPageFit() {
+      const page = document.getElementById('resumePage');
+      const previewHeightAdjust = parseFloat(getComputedStyle(page).getPropertyValue('--preview-page-height-adjust')) || 0;
+      const pageHeightLimit = (11 * 96) + previewHeightAdjust;
+      const actualHeight = page.getBoundingClientRect().height;
+      const overflowPx = Math.max(0, Math.round(actualHeight - pageHeightLimit));
+      const summarySentences = (state.summary || '').split(/[.!?]+/).filter(x => x.trim()).length;
+      const overLimit = overflowPx > 8;
+      const hints = [];
+      if (summarySentences > 4) hints.push('Shorten summary to 3-4 sentences.');
+      if (state.projects.filter(p => p.name).length > 2) hints.push('Keep projects to 2 entries max.');
+      if (getAllResumeBullets().some(b => b.split(/\s+/).filter(Boolean).length > 24)) hints.push('Trim long bullets to under 24 words.');
+      document.getElementById('pageFitStatus').innerHTML = `
+        <div class="feedback-item ${overLimit ? 'error' : 'good'}">
+          <div class="feedback-title">${overLimit ? 'Over 1 Page' : 'Fits 1 Page'}</div>
+          <div class="feedback-desc">${overLimit ? `Estimated overflow: about ${overflowPx}px.` : 'Current content is within a 1-page layout.'}</div>
+        </div>
+        ${hints.length ? hints.map(h => `<div class="feedback-item warn"><div class="feedback-desc">${esc(h)}</div></div>`).join('') : ''}
+      `;
+    }
+
+    // ===== SCORE / FEEDBACK =====
+    function updateScore() {
+      let total = 0;
+      const breakdown = [];
+      const feedback = [];
+
+      // Name & Contact (10 pts)
+      const hasName = state.name.length > 2;
+      const hasContact = state.contact.length > 5;
+      const contactScore = (hasName ? 5 : 0) + (hasContact ? 5 : 0);
+      total += contactScore;
+      breakdown.push({ label: 'Contact Info', score: contactScore, max: 10 });
+      if (!hasName) feedback.push({ type: 'error', title: 'Missing Name', desc: 'Add your full name to the resume.' });
+      if (!hasContact) feedback.push({ type: 'warn', title: 'Contact Info Too Short', desc: 'Add phone, email, LinkedIn, or GitHub.' });
+
+      // Education (15 pts)
+      const eduFilled = state.education.filter(e => e.school).length;
+      const eduScore = Math.min(15, eduFilled * 8);
+      total += eduScore;
+      breakdown.push({ label: 'Education', score: eduScore, max: 15 });
+      if (!eduFilled) feedback.push({ type: 'error', title: 'No Education', desc: 'Add at least one education entry.' });
+
+      // Skills separated (20 pts) — AI writes combined, humans separate
+      const skillCategories = state.skills.filter(s => s.category && s.items).length;
+      const skillItems = state.skills.filter(s => s.items).map(s => s.items.split(',').filter(x => x.trim()).length);
+      const totalSkills = skillItems.reduce((a, b) => a + b, 0);
+      let skillScore = 0;
+      if (skillCategories >= 2) skillScore += 10;
+      else if (skillCategories === 1) skillScore += 5;
+      if (totalSkills >= 8) skillScore += 10;
+      else if (totalSkills >= 4) skillScore += 5;
+      total += skillScore;
+      breakdown.push({ label: 'Skills (Categorized)', score: skillScore, max: 20 });
+      if (skillCategories < 2) feedback.push({ type: 'warn', title: 'Skills Not Categorized', desc: 'AI writes skills combined. Humans separate into categories (Languages, Frameworks, Tools). Add more categories.' });
+      if (totalSkills < 8) feedback.push({ type: 'warn', title: 'Too Few Skills', desc: 'List at least 8 specific skills to look credible.' });
+
+      // Projects (15 pts)
+      const projEntries = state.projects.filter(p => p.name);
+      const projBullets = projEntries.flatMap(p => p.bullets || []).filter(b => b.trim());
+      let projScore = 0;
+      if (projEntries.length >= 2) projScore += 8;
+      else if (projEntries.length === 1) projScore += 4;
+      if (projBullets.length >= 4) projScore += 7;
+      else if (projBullets.length >= 2) projScore += 4;
+      total += projScore;
+      breakdown.push({ label: 'Projects', score: projScore, max: 15 });
+
+      // Personal statement (10 pts)
+      const statementWords = (state.summary || '').split(/\s+/).filter(Boolean).length;
+      let statementScore = 0;
+      if (statementWords >= 35 && statementWords <= 70) statementScore = 10;
+      else if (statementWords >= 20) statementScore = 7;
+      else if (statementWords > 0) statementScore = 4;
+      total += statementScore;
+      breakdown.push({ label: 'Personal Statement', score: statementScore, max: 10 });
+      if (!state.summary) feedback.push({ type: 'warn', title: 'No Personal Statement', desc: 'Add a 3-4 sentence personal statement at the top.' });
+      else if (statementWords > 70) feedback.push({ type: 'warn', title: 'Too Long', desc: 'Trim the personal statement to stay under 1 page.' });
+
+      // Specificity check (5 pts) — AI is generic, humans are specific
+      const allText = JSON.stringify(state).toLowerCase();
+      const specificIndicators = ['%', '$', 'users', 'reduced', 'increased', 'improved', 'from', 'to', 'by', 'within', 'under'];
+      const specificityCount = specificIndicators.filter(w => allText.includes(w)).length;
+      const specScore = Math.min(5, Math.floor(specificityCount / 2));
+      total += specScore;
+      breakdown.push({ label: 'Specificity', score: specScore, max: 5 });
+      if (specScore < 3) feedback.push({ type: 'warn', title: 'Too Generic', desc: 'Add specific numbers, metrics, and outcomes. AI writes generic descriptions. Humans write: "Reduced load time by 40%" not "Improved performance".' });
+
+      // Render score
+      const maxScore = 75;
+      const pct = Math.min(100, Math.round((total / maxScore) * 100));
+      const circumference = 2 * Math.PI * 34;
+      const offset = circumference - (pct / 100) * circumference;
+      const circle = document.getElementById('scoreCircle');
+      circle.style.strokeDashoffset = offset;
+      circle.style.stroke = pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
+      document.getElementById('scoreText').textContent = pct;
+
+      document.getElementById('scoreBreakdown').innerHTML = breakdown.map(b => `
+        <div class="score-item">
+          <span class="score-item-label">${b.label}</span>
+          <span class="score-item-value" style="color:${b.score >= b.max * 0.7 ? '#22c55e' : b.score >= b.max * 0.4 ? '#f59e0b' : '#ef4444'}">${b.score}/${b.max}</span>
+        </div>
+      `).join('');
+
+      if (!feedback.length) feedback.push({ type: 'good', title: 'Looking Great!', desc: 'Your resume looks well-structured and specific. Not AI-generic!' });
+      document.getElementById('scoreFeedback').innerHTML = feedback.map(f => `
+        <div class="feedback-item ${f.type}">
+          <div class="feedback-title">${f.title}</div>
+          <div class="feedback-desc">${f.desc}</div>
+        </div>
+      `).join('');
+
+      renderPageFit();
+      renderAIInsights();
+    }
+
+    // ===== EXPORT PDF =====
+    function exportPDF() {
+      window.print();
+    }
+
+    // ===== SAVE AS JSON =====
+    function saveAsJSON() {
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (state.name || 'resume').replace(/\s+/g, '-').toLowerCase() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ===== LOAD JSON =====
+    function loadJSON() {
+      document.getElementById('jsonLoadInput').click();
+    }
+
+    function handleJSONLoad(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const loaded = JSON.parse(e.target.result);
+          Object.keys(loaded).forEach(key => {
+            if (state.hasOwnProperty(key)) {
+              state[key] = loaded[key];
+            }
+          });
+          if (!state.summary) state.summary = '';
+          if (!state.aiInsights) state.aiInsights = {};
+          if (typeof state.fontSizeStep !== 'number') state.fontSizeStep = 0;
+          if (!state.fontFamily) state.fontFamily = 'Times New Roman, Georgia, serif';
+          state.sectionOrder = mergeSectionOrder(state.sectionOrder);
+          state.sectionVisibility = mergeSectionVisibility(state.sectionVisibility);
+          state.education = Array.isArray(state.education) ? state.education : [];
+          state.experience = Array.isArray(state.experience) ? state.experience : [];
+          state.skills = Array.isArray(state.skills) ? state.skills : [];
+          state.projects = Array.isArray(state.projects) ? state.projects : [];
+          state.leadership = Array.isArray(state.leadership) ? state.leadership : [];
+          state.certifications = Array.isArray(state.certifications) ? state.certifications : [];
+          state.languages = Array.isArray(state.languages) ? state.languages : [];
+          pushHistory();
+          renderForm();
+          renderPreview();
+          updateScore();
+          saveState();
+          alert('Resume loaded!');
+        } catch(err) {
+          alert('Invalid JSON file.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // ===== FORM FULLSCREEN =====
+    let formFullscreen = false;
+    function toggleFormFullscreen() {
+      formFullscreen = !formFullscreen;
+      const panel = document.getElementById('formPanel');
+      panel.classList.toggle('fullscreen', formFullscreen);
+      autoExpandAllTextareas();
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && formFullscreen) {
+        toggleFormFullscreen();
+      }
+    });
+
+    // ===== CLEAR ALL =====
+    function clearAll() {
+      if (confirm('Clear all data? This cannot be undone.')) {
+        localStorage.removeItem('resume_state');
+        state = getDefaultState();
+        history = [];
+        historyIndex = -1;
+        pushHistory();
+        renderForm();
+        renderPreview();
+        updateScore();
+      }
+    }
+
+    // ===== UTILS =====
+    function esc(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); redo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportPDF(); }
+    });
+
+    // ===== START =====
+    pushHistory();
+    init();
+  </script>
+</body>
+</html>
