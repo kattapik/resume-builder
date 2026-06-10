@@ -155,12 +155,10 @@ Object.assign(window, {
 });
 
 // ===== KEYBOARD SHORTCUTS =====
-let _formFullscreen = false;
 document.addEventListener('keydown', (e: KeyboardEvent) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); window.undo(); }
   if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); window.redo(); }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); exportPDF(); }
-  if (e.key === 'Escape' && _formFullscreen) { toggleFormFullscreen(); _formFullscreen = false; }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); void exportPDF(); }
 });
 
 // ===== INIT =====

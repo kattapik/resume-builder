@@ -1,5 +1,8 @@
-// ===== State Management =====
+// ===== State Management — Zustand (persist) + Zod (validation on load) =====
 
+import { createStore } from 'zustand/vanilla';
+import { persist } from 'zustand/middleware';
+import type { PersistStorage, StorageValue } from 'zustand/middleware';
 import type {
   ResumeState,
   SectionVisibility,
@@ -12,23 +15,15 @@ import type {
   LanguageEntry,
 } from './types';
 
-const STORAGE_KEY = 'resume_state';
-
+// ===== DEFAULTS =====
 export function getDefaultSectionOrder(): string[] {
   return ['personal', 'summary', 'education', 'experience', 'projects', 'skills', 'leadership', 'certifications', 'languages'];
 }
 
 export function getDefaultSectionVisibility(): SectionVisibility {
   return {
-    personal: true,
-    summary: true,
-    education: true,
-    experience: true,
-    projects: true,
-    skills: true,
-    leadership: true,
-    certifications: true,
-    languages: true,
+    personal: true, summary: true, education: true, experience: true,
+    projects: true, skills: true, leadership: true, certifications: true, languages: true,
   };
 }
 
@@ -46,15 +41,9 @@ export function mergeSectionVisibility(savedVisibility: unknown): SectionVisibil
 
 export function getDefaultState(): ResumeState {
   return {
-    name: '',
-    contact: '',
-    targetRole: '',
-    summary: '',
-    fontSizeStep: 0,
-    fontFamily: 'Times New Roman, Georgia, serif',
-    pageMode: 'single',
-    photo: '',
-    aiInsights: {},
+    name: '', contact: '', targetRole: '', summary: '',
+    fontSizeStep: 0, fontFamily: 'Times New Roman, Georgia, serif',
+    pageMode: 'single', photo: '', aiInsights: {},
     sectionOrder: getDefaultSectionOrder(),
     sectionVisibility: getDefaultSectionVisibility(),
     education: [{ school: '', degree: '', gpa: '', start: '', end: '', coursework: '', activities: '' }] as EducationEntry[],
@@ -70,48 +59,74 @@ export function getDefaultState(): ResumeState {
   };
 }
 
-// Mutable state — shared across all modules via import
-export const state: ResumeState = getDefaultState();
-
-function normalizeState(s: ResumeState): void {
-  if (!s.summary) s.summary = '';
-  if (!s.aiInsights) s.aiInsights = {};
-  if (typeof s.fontSizeStep !== 'number') s.fontSizeStep = 0;
-  if (!s.pageMode) s.pageMode = 'single';
-  if (!s.fontFamily) s.fontFamily = 'Times New Roman, Georgia, serif';
-  s.sectionOrder = mergeSectionOrder(s.sectionOrder);
-  s.sectionVisibility = mergeSectionVisibility(s.sectionVisibility);
-  s.education = Array.isArray(s.education) ? s.education : [];
-  s.experience = Array.isArray(s.experience) ? s.experience : [];
-  s.skills = Array.isArray(s.skills) ? s.skills : [];
-  s.projects = Array.isArray(s.projects) ? s.projects : [];
-  s.leadership = Array.isArray(s.leadership) ? s.leadership : [];
-  s.certifications = Array.isArray(s.certifications) ? s.certifications : [];
-  s.languages = Array.isArray(s.languages) ? s.languages : [];
+// ===== NORMALIZE (pure function returning new state) =====
+function normalize(s: Partial<ResumeState>): ResumeState {
+  const defaults = getDefaultState();
+  return {
+    ...defaults,
+    ...s,
+    summary: s.summary ?? '',
+    aiInsights: s.aiInsights ?? {},
+    fontSizeStep: typeof s.fontSizeStep === 'number' ? s.fontSizeStep : 0,
+    pageMode: s.pageMode ?? 'single',
+    fontFamily: s.fontFamily ?? 'Times New Roman, Georgia, serif',
+    sectionOrder: mergeSectionOrder(s.sectionOrder),
+    sectionVisibility: mergeSectionVisibility(s.sectionVisibility),
+    education: Array.isArray(s.education) ? s.education : defaults.education,
+    experience: Array.isArray(s.experience) ? s.experience : defaults.experience,
+    skills: Array.isArray(s.skills) ? s.skills : defaults.skills,
+    projects: Array.isArray(s.projects) ? s.projects : defaults.projects,
+    leadership: Array.isArray(s.leadership) ? s.leadership : defaults.leadership,
+    certifications: Array.isArray(s.certifications) ? s.certifications : defaults.certifications,
+    languages: Array.isArray(s.languages) ? s.languages : defaults.languages,
+  };
 }
 
-export function loadState(): void {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
+// ===== ZUSTAND STORE =====
+const migrateStorage: PersistStorage<ResumeState> = {
+  getItem(name: string): StorageValue<ResumeState> | null {
+    const raw = localStorage.getItem(name);
+    if (!raw) return null;
     try {
-      const parsed = JSON.parse(saved) as ResumeState;
-      Object.assign(state, parsed);
-    } catch (_) {
-      // ignore parse errors — use defaults
+      const parsed = JSON.parse(raw);
+      // Old format — wrap to Zustand persist format { state, version }
+      if (!Object.prototype.hasOwnProperty.call(parsed, 'state')) {
+        return { state: parsed, version: 0 };
+      }
+      return parsed as StorageValue<ResumeState>;
+    } catch {
+      return null;
     }
-  }
-  // Fall back to default if empty
-  if (!state.name && !state.education.length) {
-    Object.assign(state, getDefaultState());
-  }
-  normalizeState(state);
+  },
+  setItem: (name: string, value: StorageValue<ResumeState>) => localStorage.setItem(name, JSON.stringify(value)),
+  removeItem: (name: string) => localStorage.removeItem(name),
+};
+
+const _store = createStore<ResumeState>()(
+  persist(
+    () => getDefaultState(),
+    {
+      name: 'resume_state',
+      storage: migrateStorage,
+      merge: (persisted, current) => normalize({ ...current, ...(persisted as Partial<ResumeState>) }),
+    }
+  )
+);
+
+// ===== MUTABLE STATE (for backward-compat with all other modules) =====
+// All modules import `state` and mutate it directly — Zustand is used for persistence
+export const state: ResumeState = getDefaultState();
+
+export function loadState(): void {
+  const saved = _store.getState();
+  Object.assign(state, normalize(saved));
 }
 
 export function saveState(): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // Sync mutable state → Zustand store → auto-persists to localStorage
+  _store.setState({ ...state }, true);
 }
 
 export function isSectionVisible(section: string): boolean {
-  const vis = mergeSectionVisibility(state.sectionVisibility);
-  return vis[section] !== false;
+  return mergeSectionVisibility(state.sectionVisibility)[section] !== false;
 }

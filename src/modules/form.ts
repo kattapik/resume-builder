@@ -5,6 +5,7 @@ import { esc, autoExpandTextarea, autoExpandAllTextareas } from './utils';
 import { renderPreview } from './preview';
 import { pushHistory } from './history';
 import { updateScore } from './score';
+import { initSortable } from './dragdrop';
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -96,6 +97,8 @@ export function renderForm(): void {
   syncSectionVisibilityButtons();
   applySectionOrder();
   autoExpandAllTextareas();
+  // Re-init SortableJS after DOM re-render
+  requestAnimationFrame(() => initSortable());
 }
 
 // ===== EDUCATION =====
@@ -328,31 +331,31 @@ export function renderLanguageForm(): void {
 
 // ===== FIELD UPDATE FUNCTIONS =====
 export function updateEdu(i: number, key: string, val: string): void {
-  (state.education[i] as Record<string, string>)[key] = val;
+  (state.education[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateExp(i: number, key: string, val: string): void {
-  (state.experience[i] as Record<string, string>)[key] = val;
+  (state.experience[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateSkill(i: number, key: string, val: string): void {
-  (state.skills[i] as Record<string, string>)[key] = val;
+  (state.skills[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateProj(i: number, key: string, val: string): void {
-  (state.projects[i] as Record<string, string>)[key] = val;
+  (state.projects[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateLeadership(i: number, key: string, val: string): void {
-  (state.leadership[i] as Record<string, string>)[key] = val;
+  (state.leadership[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateCertification(i: number, key: string, val: string): void {
-  (state.certifications[i] as Record<string, string>)[key] = val;
+  (state.certifications[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateLanguage(i: number, key: string, val: string): void {
-  (state.languages[i] as Record<string, string>)[key] = val;
+  (state.languages[i] as any)[key] = val;
   scheduleUpdate();
 }
 export function updateExpBullets(i: number, val: string): void {
