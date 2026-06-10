@@ -2515,9 +2515,6 @@ JSON output schema (output this ONLY at the end, after all interview questions a
           if (titleEl) {
             const titleClone = titleEl.cloneNode(true);
             stripIds(titleClone);
-            if (isContinuation) {
-              titleClone.textContent += ' (Continued)';
-            }
             rSectionClone.appendChild(titleClone);
           }
 
