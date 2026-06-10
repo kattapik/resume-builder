@@ -276,9 +276,8 @@
     .preview-panel::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
 
     .resume-page {
-      --preview-page-height-adjust: 100px;
       width: 8.5in;
-      min-height: calc(11in + var(--preview-page-height-adjust));
+      height: 11in;
       background: white;
       color: #111;
       --resume-font-step: 0px;
@@ -287,6 +286,37 @@
       padding: 0.35in 0.5in;
       box-shadow: 0 4px 24px rgba(0,0,0,0.3);
       box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .resume-page.overflow::after {
+      content: "⚠️ Content overflows 1 page!";
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: #ef4444;
+      color: white;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: sans-serif;
+      border-radius: 4px;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #tempRender {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 8.5in;
+      padding: 0.35in 0.5in;
+      box-sizing: border-box;
+      background: white;
+      color: #111;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     /* Resume styles */
@@ -643,20 +673,25 @@
 
     /* Print */
     @media print {
-      body { background: white; }
-      .topbar, .form-panel, .score-panel, .wizard-overlay { display: none !important; }
+      body { background: white; height: auto; overflow: visible; }
+      .topbar, .form-panel, .score-panel, .wizard-overlay, .ai-overlay { display: none !important; }
       .preview-panel {
         background: white;
         padding: 0;
         overflow: visible;
+        display: block;
       }
       .resume-page {
-        box-shadow: none;
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        min-height: 11in;
-        padding: 0.35in 0.5in;
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 8.5in !important;
+        height: 11in !important;
+        page-break-after: always;
+        break-after: page;
+        padding: 0.35in 0.5in !important;
+      }
+      .resume-page.overflow::after {
+        display: none;
       }
     }
   </style>
@@ -675,6 +710,10 @@
       <button class="tb-btn" onclick="openAIAnalyst()">AI Analyst</button>
       <button class="tb-btn" onclick="decreaseResumeFont()" title="Decrease resume font">A-</button>
       <button class="tb-btn" onclick="increaseResumeFont()" title="Increase resume font">A+</button>
+      <select id="pageModeSelect" class="tb-btn" style="padding:6px 10px;background:#18181b;color:#e4e4e7" onchange="setPageMode(this.value)">
+        <option value="single">Single Page</option>
+        <option value="multi">Multi-Page</option>
+      </select>
       <select id="fontFamilySelect" class="tb-btn" style="padding:6px 10px;background:#18181b;color:#e4e4e7" onchange="setResumeFontFamily(this.value)">
         <option value="Times New Roman, Georgia, serif">Times</option>
         <option value="Georgia, serif">Georgia</option>
@@ -843,24 +882,29 @@
     </div>
 
     <!-- Preview Panel -->
-    <div class="preview-panel">
-      <div class="resume-page" id="resumePage">
-        <div class="r-header" id="rPersonal">
-          <div class="r-photo" id="rPhoto"><span>Photo</span></div>
-          <div>
-            <h1 class="r-name" id="rName">YOUR NAME</h1>
-            <div class="r-contact" id="rContact">+66 x-xxx-xxxx | email@example.com</div>
-          </div>
-        </div>
-        <div id="rSummary"></div>
-        <div id="rEducation"></div>
-        <div id="rExperience"></div>
-        <div id="rProjects"></div>
-        <div id="rSkills"></div>
-        <div id="rLeadership"></div>
-        <div id="rCertifications"></div>
-        <div id="rLanguages"></div>
+    <div class="preview-panel" id="previewPanel">
+      <div id="resumePagesContainer" style="display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%;">
+        <!-- Rendered pages will go here -->
       </div>
+    </div>
+
+    <!-- Hidden Master Container for rendering/measuring -->
+    <div id="tempRender">
+      <div class="r-header" id="rPersonal">
+        <div class="r-photo" id="rPhoto"><span>Photo</span></div>
+        <div>
+          <h1 class="r-name" id="rName">YOUR NAME</h1>
+          <div class="r-contact" id="rContact">+66 x-xxx-xxxx | email@example.com</div>
+        </div>
+      </div>
+      <div id="rSummary"></div>
+      <div id="rEducation"></div>
+      <div id="rExperience"></div>
+      <div id="rProjects"></div>
+      <div id="rSkills"></div>
+      <div id="rLeadership"></div>
+      <div id="rCertifications"></div>
+      <div id="rLanguages"></div>
     </div>
 
     <!-- Score Panel -->
@@ -1701,6 +1745,7 @@ JSON output schema (output this ONLY at the end, after all interview questions a
       summary: '',
       fontSizeStep: 0,
       fontFamily: 'Times New Roman, Georgia, serif',
+      pageMode: 'single',
       photo: '',
       aiInsights: {},
       sectionOrder: [],
@@ -1799,6 +1844,7 @@ JSON output schema (output this ONLY at the end, after all interview questions a
       if (!state.summary) state.summary = '';
       if (!state.aiInsights) state.aiInsights = {};
       if (typeof state.fontSizeStep !== 'number') state.fontSizeStep = 0;
+      if (!state.pageMode) state.pageMode = 'single';
       if (!state.fontFamily) state.fontFamily = 'Times New Roman, Georgia, serif';
       state.sectionOrder = mergeSectionOrder(state.sectionOrder);
       state.sectionVisibility = mergeSectionVisibility(state.sectionVisibility);
@@ -1819,6 +1865,7 @@ JSON output schema (output this ONLY at the end, after all interview questions a
         summary: '',
         fontSizeStep: 0,
         fontFamily: 'Times New Roman, Georgia, serif',
+        pageMode: 'single',
         photo: '',
         aiInsights: {},
         sectionOrder: getDefaultSectionOrder(),
@@ -2300,11 +2347,12 @@ JSON output schema (output this ONLY at the end, after all interview questions a
 
     // ===== RENDER PREVIEW =====
     function renderPreview() {
-      const page = document.getElementById('resumePage');
+      const page = document.getElementById('tempRender');
       state.sectionOrder = mergeSectionOrder(state.sectionOrder);
       page.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
       page.style.setProperty('--resume-font-family', state.fontFamily);
       document.getElementById('fontFamilySelect').value = state.fontFamily;
+      document.getElementById('pageModeSelect').value = state.pageMode || 'single';
 
       document.querySelector('.r-header').style.display = isSectionVisible('personal') ? 'grid' : 'none';
       document.getElementById('rName').textContent = state.name || 'YOUR NAME';
@@ -2325,10 +2373,201 @@ JSON output schema (output this ONLY at the end, after all interview questions a
       renderCertificationPreview();
       renderLanguagePreview();
       applyPreviewSectionOrder();
+      paginate();
+    }
+
+    function setPageMode(value) {
+      state.pageMode = value;
+      renderPreview();
+      saveState();
+      updateScore();
+    }
+
+    function paginate() {
+      const container = document.getElementById('resumePagesContainer');
+      container.innerHTML = '';
+
+      const pageLimit = 1056; // 11in * 96px
+      const paddingY = 67.2; // 0.35in * 2 * 96px
+      const maxContentHeight = pageLimit - paddingY;
+
+      const temp = document.getElementById('tempRender');
+      const pageMode = state.pageMode || 'single';
+
+      // Helper to strip ID attributes from cloned element and its descendants
+      function stripIds(node) {
+        if (node.id) node.removeAttribute('id');
+        node.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        return node;
+      }
+
+      if (pageMode === 'single') {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'resume-page';
+        pageDiv.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+        pageDiv.style.setProperty('--resume-font-family', state.fontFamily);
+        
+        // Move all visible elements
+        Array.from(temp.children).forEach(child => {
+          if (child.id) {
+            const clone = child.cloneNode(true);
+            stripIds(clone);
+            pageDiv.appendChild(clone);
+          }
+        });
+        container.appendChild(pageDiv);
+
+        // Check overflow
+        setTimeout(() => {
+          const scrollH = pageDiv.scrollHeight;
+          if (scrollH > pageLimit + 5) { // 5px tolerance
+            pageDiv.classList.add('overflow');
+          } else {
+            pageDiv.classList.remove('overflow');
+          }
+          renderPageFit();
+        }, 50);
+        return;
+      }
+
+      // Multi-page layout selection:
+      let currentPage = document.createElement('div');
+      currentPage.className = 'resume-page';
+      currentPage.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+      currentPage.style.setProperty('--resume-font-family', state.fontFamily);
+      container.appendChild(currentPage);
+
+      let currentPageHeight = 0;
+
+      // tempRender already has elements in the correct order
+      const sections = Array.from(temp.children);
+
+      sections.forEach(section => {
+        if (!section.innerHTML.trim() || section.style.display === 'none') {
+          return;
+        }
+
+        // If it's rPersonal or rSummary, we treat it as an atomic element
+        if (section.id === 'rPersonal' || section.id === 'rSummary') {
+          const rect = section.getBoundingClientRect();
+          const height = rect.height;
+
+          if (currentPageHeight + height > maxContentHeight && currentPageHeight > 0) {
+            currentPage = document.createElement('div');
+            currentPage.className = 'resume-page';
+            currentPage.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+            currentPage.style.setProperty('--resume-font-family', state.fontFamily);
+            container.appendChild(currentPage);
+            currentPageHeight = 0;
+          }
+
+          const clone = section.cloneNode(true);
+          stripIds(clone);
+          currentPage.appendChild(clone);
+          currentPageHeight += height;
+          return;
+        }
+
+        // For other sections, they are formatted as a .r-section container
+        const rSection = section.querySelector('.r-section');
+        if (!rSection) return;
+
+        const titleEl = rSection.querySelector('.r-section-title');
+        const titleHeight = titleEl ? titleEl.getBoundingClientRect().height : 0;
+
+        // Collect all entries/items
+        let entries = Array.from(rSection.querySelectorAll('.r-entry'));
+        if (entries.length === 0) {
+          const skillsContainer = rSection.querySelector('.r-skills');
+          if (skillsContainer) {
+            entries = Array.from(skillsContainer.children);
+          }
+        }
+
+        if (entries.length === 0) {
+          const rect = section.getBoundingClientRect();
+          const height = rect.height;
+          if (currentPageHeight + height > maxContentHeight && currentPageHeight > 0) {
+            currentPage = document.createElement('div');
+            currentPage.className = 'resume-page';
+            currentPage.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+            currentPage.style.setProperty('--resume-font-family', state.fontFamily);
+            container.appendChild(currentPage);
+            currentPageHeight = 0;
+          }
+          const clone = section.cloneNode(true);
+          stripIds(clone);
+          currentPage.appendChild(clone);
+          currentPageHeight += height;
+          return;
+        }
+
+        let pageSectionContainer = null;
+        let pageSectionContentWrapper = null;
+
+        function initSectionOnCurrentPage(isContinuation) {
+          const sectionClone = section.cloneNode(false); // shallow clone
+          stripIds(sectionClone);
+          const rSectionClone = rSection.cloneNode(false); // shallow clone
+          stripIds(rSectionClone);
+          sectionClone.appendChild(rSectionClone);
+
+          if (titleEl) {
+            const titleClone = titleEl.cloneNode(true);
+            stripIds(titleClone);
+            if (isContinuation) {
+              titleClone.textContent += ' (Continued)';
+            }
+            rSectionClone.appendChild(titleClone);
+          }
+
+          const originalSkills = rSection.querySelector('.r-skills');
+          if (originalSkills) {
+            const skillsClone = originalSkills.cloneNode(false);
+            stripIds(skillsClone);
+            rSectionClone.appendChild(skillsClone);
+            pageSectionContentWrapper = skillsClone;
+          } else {
+            pageSectionContentWrapper = rSectionClone;
+          }
+
+          currentPage.appendChild(sectionClone);
+          pageSectionContainer = sectionClone;
+        }
+
+        entries.forEach((entry, idx) => {
+          const entryHeight = entry.getBoundingClientRect().height;
+          const requiredHeight = (pageSectionContainer === null) ? (titleHeight + entryHeight + 15) : entryHeight;
+
+          if (currentPageHeight + requiredHeight > maxContentHeight && currentPageHeight > 0) {
+            currentPage = document.createElement('div');
+            currentPage.className = 'resume-page';
+            currentPage.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+            currentPage.style.setProperty('--resume-font-family', state.fontFamily);
+            container.appendChild(currentPage);
+            currentPageHeight = 0;
+
+            pageSectionContainer = null;
+            pageSectionContentWrapper = null;
+          }
+
+          if (!pageSectionContainer) {
+            initSectionOnCurrentPage(idx > 0);
+            currentPageHeight += titleHeight;
+          }
+
+          const entryClone = entry.cloneNode(true);
+          stripIds(entryClone);
+          pageSectionContentWrapper.appendChild(entryClone);
+          currentPageHeight += entryHeight;
+        });
+      });
+
+      setTimeout(renderPageFit, 50);
     }
 
     function applyPreviewSectionOrder() {
-      const page = document.getElementById('resumePage');
+      const page = document.getElementById('tempRender');
       state.sectionOrder.forEach(section => {
         const node = document.getElementById('r' + section.charAt(0).toUpperCase() + section.slice(1));
         if (node) page.appendChild(node);
@@ -2440,24 +2679,37 @@ JSON output schema (output this ONLY at the end, after all interview questions a
     }
 
     function renderPageFit() {
-      const page = document.getElementById('resumePage');
-      const previewHeightAdjust = parseFloat(getComputedStyle(page).getPropertyValue('--preview-page-height-adjust')) || 0;
-      const pageHeightLimit = (11 * 96) + previewHeightAdjust;
-      const actualHeight = page.getBoundingClientRect().height;
-      const overflowPx = Math.max(0, Math.round(actualHeight - pageHeightLimit));
-      const summarySentences = (state.summary || '').split(/[.!?]+/).filter(x => x.trim()).length;
-      const overLimit = overflowPx > 8;
-      const hints = [];
-      if (summarySentences > 4) hints.push('Shorten summary to 3-4 sentences.');
-      if (state.projects.filter(p => p.role || p.name).length > 2) hints.push('Keep projects to 2 entries max.');
-      if (getAllResumeBullets().some(b => b.split(/\s+/).filter(Boolean).length > 24)) hints.push('Trim long bullets to under 24 words.');
-      document.getElementById('pageFitStatus').innerHTML = `
-        <div class="feedback-item ${overLimit ? 'error' : 'good'}">
-          <div class="feedback-title">${overLimit ? 'Over 1 Page' : 'Fits 1 Page'}</div>
-          <div class="feedback-desc">${overLimit ? `Estimated overflow: about ${overflowPx}px.` : 'Current content is within a 1-page layout.'}</div>
-        </div>
-        ${hints.length ? hints.map(h => `<div class="feedback-item warn"><div class="feedback-desc">${esc(h)}</div></div>`).join('') : ''}
-      `;
+      const pages = document.querySelectorAll('#resumePagesContainer .resume-page');
+      if (pages.length === 0) return;
+
+      const pageMode = state.pageMode || 'single';
+
+      if (pageMode === 'single') {
+        const page = pages[0];
+        const pageHeightLimit = 1056; // 11 * 96
+        const actualHeight = page.scrollHeight;
+        const overflowPx = Math.max(0, Math.round(actualHeight - pageHeightLimit));
+        const summarySentences = (state.summary || '').split(/[.!?]+/).filter(x => x.trim()).length;
+        const overLimit = overflowPx > 8;
+        const hints = [];
+        if (summarySentences > 4) hints.push('Shorten summary to 3-4 sentences.');
+        if (state.projects.filter(p => p.role || p.name).length > 2) hints.push('Keep projects to 2 entries max.');
+        if (getAllResumeBullets().some(b => b.split(/\s+/).filter(Boolean).length > 24)) hints.push('Trim long bullets to under 24 words.');
+        document.getElementById('pageFitStatus').innerHTML = `
+          <div class="feedback-item ${overLimit ? 'error' : 'good'}">
+            <div class="feedback-title">${overLimit ? 'Over 1 Page' : 'Fits 1 Page'}</div>
+            <div class="feedback-desc">${overLimit ? `Estimated overflow: about ${overflowPx}px.` : 'Current content is within a 1-page layout.'}</div>
+          </div>
+          ${hints.length ? hints.map(h => `<div class="feedback-item warn"><div class="feedback-desc">${esc(h)}</div></div>`).join('') : ''}
+        `;
+      } else {
+        document.getElementById('pageFitStatus').innerHTML = `
+          <div class="feedback-item good">
+            <div class="feedback-title">Multi-Page Mode</div>
+            <div class="feedback-desc">Content distributed across ${pages.length} page(s).</div>
+          </div>
+        `;
+      }
     }
 
     // ===== SCORE / FEEDBACK =====
