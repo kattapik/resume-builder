@@ -1,0 +1,107 @@
+/* ===== Preview Panel ===== */
+.preview-panel {
+  flex: 1;
+  background: #27272a;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+.preview-panel::-webkit-scrollbar { width: 6px; }
+.preview-panel::-webkit-scrollbar-track { background: transparent; }
+.preview-panel::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+
+/* ===== Resume Page ===== */
+.resume-page {
+  width: 8.5in;
+  height: 11in;
+  background: white;
+  color: #111;
+  --resume-font-step: 0px;
+  --resume-font-family: "Times New Roman", Georgia, serif;
+  font-family: var(--resume-font-family);
+  padding: 0.35in 0.5in;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.resume-page.overflow::after {
+  content: "⚠️ Content overflows 1 page!";
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: sans-serif;
+  border-radius: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ===== Temp Render (off-screen measurement) ===== */
+#tempRender {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 8.5in;
+  padding: 0.35in 0.5in;
+  box-sizing: border-box;
+  background: white;
+  color: #111;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ===== Resume Content Styles (r-*) ===== */
+.r-header {
+  display: grid;
+  grid-template-columns: 1in 1fr;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 6px;
+}
+.r-photo {
+  width: 1in;
+  height: 1.15in;
+  border: 1.2px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 4px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.r-photo img { width: 100%; height: 100%; object-fit: cover; }
+.r-name { font-size: calc(26px + var(--resume-font-step)); font-weight: 700; margin: 0; line-height: 1.05; text-align: center; }
+.r-contact { margin-top: 4px; font-size: calc(12px + var(--resume-font-step)); line-height: 1.25; text-align: center; }
+.r-section { margin-top: 9px; }
+.r-summary { font-size: calc(12px + var(--resume-font-step)); line-height: 1.4; margin-top: 6px; text-align: left; }
+.r-section-title {
+  font-size: calc(13px + var(--resume-font-step));
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #222;
+  padding-bottom: 2px;
+  margin-bottom: 5px;
+}
+.r-entry { margin-bottom: 6px; }
+.r-tech-stack { font-size: calc(12px + var(--resume-font-step)); color: #555; margin-top: 1px; margin-bottom: 2px; }
+.r-topline { display: flex; justify-content: space-between; gap: 16px; font-size: calc(13px + var(--resume-font-step)); font-weight: 700; }
+.r-subline { display: flex; justify-content: space-between; gap: 16px; font-size: calc(12px + var(--resume-font-step)); font-style: italic; margin-top: 0; }
+.r-left { flex: 1; }
+.r-right { white-space: nowrap; text-align: right; }
+.r-meta { font-size: calc(12px + var(--resume-font-step)); margin: 1px 0; }
+.r-skills { font-size: calc(12px + var(--resume-font-step)); line-height: 1.35; }
+.r-skills strong { font-weight: 700; }
+.r-ul { margin: 3px 0 0 16px; padding: 0; font-size: calc(12px + var(--resume-font-step)); line-height: 1.3; }
+.r-li { margin: 0 0 1px 0; }
+.r-compact { margin-bottom: 4px; }

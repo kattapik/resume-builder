@@ -1,0 +1,7 @@
+/* ===== Main CSS — imports all stylesheets ===== */
+@import './base.css';
+@import './form.css';
+@import './preview.css';
+@import './score.css';
+@import './wizard.css';
+@import './print.css';

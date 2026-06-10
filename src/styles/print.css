@@ -1,0 +1,27 @@
+/* ===== Print Styles ===== */
+@media print {
+  body { background: white; height: auto; overflow: visible; }
+  .topbar,
+  .form-panel,
+  .score-panel,
+  .wizard-overlay,
+  .ai-overlay { display: none !important; }
+  .preview-panel {
+    background: white;
+    padding: 0;
+    overflow: visible;
+    display: block;
+  }
+  .resume-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 8.5in !important;
+    height: 11in !important;
+    page-break-after: always;
+    break-after: page;
+    padding: 0.35in 0.5in !important;
+  }
+  .resume-page.overflow::after {
+    display: none;
+  }
+}
