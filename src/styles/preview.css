@@ -18,8 +18,11 @@
   background: white;
   color: #111;
   --resume-font-step: 0px;
+  --resume-line-height-step: 0;
+  --resume-line-height: calc(1.35 + var(--resume-line-height-step) * 0.05);
   --resume-font-family: "Times New Roman", Georgia, serif;
   font-family: var(--resume-font-family);
+  line-height: var(--resume-line-height);
   padding: 0.35in 0.5in;
   box-shadow: 0 4px 24px rgba(0,0,0,0.3);
   box-sizing: border-box;
@@ -53,6 +56,12 @@
   box-sizing: border-box;
   background: white;
   color: #111;
+  --resume-font-step: 0px;
+  --resume-line-height-step: 0;
+  --resume-line-height: calc(1.35 + var(--resume-line-height-step) * 0.05);
+  --resume-font-family: "Times New Roman", Georgia, serif;
+  font-family: var(--resume-font-family);
+  line-height: var(--resume-line-height);
   visibility: hidden;
   pointer-events: none;
 }
@@ -84,7 +93,7 @@
 .r-target { font-size: calc(14px + var(--resume-font-step)); font-weight: 600; text-transform: uppercase; color: #4b5563; text-align: center; margin-top: 3px; }
 .r-contact { margin-top: 4px; font-size: calc(12px + var(--resume-font-step)); line-height: 1.25; text-align: center; }
 .r-section { margin-top: 9px; }
-.r-summary { font-size: calc(12px + var(--resume-font-step)); line-height: 1.4; margin-top: 6px; text-align: left; }
+.r-summary { font-size: calc(12px + var(--resume-font-step)); line-height: var(--resume-line-height); margin-top: 6px; text-align: left; }
 .r-section-title {
   font-size: calc(13px + var(--resume-font-step));
   font-weight: 700;
@@ -101,9 +110,9 @@
 .r-left { flex: 1; }
 .r-right { white-space: nowrap; text-align: right; }
 .r-meta { font-size: calc(12px + var(--resume-font-step)); margin: 1px 0; }
-.r-skills { font-size: calc(12px + var(--resume-font-step)); line-height: 1.35; }
+.r-skills { font-size: calc(12px + var(--resume-font-step)); line-height: var(--resume-line-height); }
 .r-skills strong { font-weight: 700; }
-.r-ul { margin: 3px 0 0 16px; padding: 0; font-size: calc(12px + var(--resume-font-step)); line-height: 1.3; }
+.r-ul { margin: 3px 0 0 16px; padding: 0; font-size: calc(12px + var(--resume-font-step)); line-height: var(--resume-line-height); }
 .r-li { margin: 0 0 1px 0; }
 .r-compact { margin-bottom: 4px; }
 

@@ -78,6 +78,7 @@ export interface ResumeState {
   address: string;
   summary: string;
   fontSizeStep: number;
+  lineHeightStep: number;
   fontFamily: string;
   pageMode: 'single' | 'multi';
   photo: string;

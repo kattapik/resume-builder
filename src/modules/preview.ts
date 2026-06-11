@@ -9,6 +9,7 @@ function createResumePage(): HTMLDivElement {
   const page = document.createElement('div');
   page.className = 'resume-page';
   page.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+  page.style.setProperty('--resume-line-height-step', state.lineHeightStep + '');
   page.style.setProperty('--resume-font-family', state.fontFamily);
   return page;
 }
@@ -20,6 +21,7 @@ export function renderPreview(): void {
 
   state.sectionOrder = mergeSectionOrder(state.sectionOrder);
   page.style.setProperty('--resume-font-step', state.fontSizeStep + 'px');
+  page.style.setProperty('--resume-line-height-step', state.lineHeightStep + '');
   page.style.setProperty('--resume-font-family', state.fontFamily);
 
   const fontSelect = document.getElementById('fontFamilySelect') as HTMLSelectElement | null;
@@ -75,7 +77,6 @@ export function setPageMode(value: string): void {
   state.pageMode = value as 'single' | 'multi';
   renderPreview();
   import('./state').then(({ saveState }) => saveState());
-  import('./score').then(({ updateScore }) => updateScore());
 }
 
 export function increaseResumeFont(): void {
@@ -86,6 +87,18 @@ export function increaseResumeFont(): void {
 
 export function decreaseResumeFont(): void {
   state.fontSizeStep = Math.max(-4, (state.fontSizeStep || 0) - 1);
+  renderPreview();
+  import('./state').then(({ saveState }) => saveState());
+}
+
+export function increaseLineHeight(): void {
+  state.lineHeightStep = Math.min(4, (state.lineHeightStep || 0) + 1);
+  renderPreview();
+  import('./state').then(({ saveState }) => saveState());
+}
+
+export function decreaseLineHeight(): void {
+  state.lineHeightStep = Math.max(-4, (state.lineHeightStep || 0) - 1);
   renderPreview();
   import('./state').then(({ saveState }) => saveState());
 }

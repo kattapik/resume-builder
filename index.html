@@ -20,6 +20,8 @@
       <button class="tb-btn" onclick="openAIAnalyst()">AI Analyst</button>
       <button class="tb-btn" onclick="decreaseResumeFont()" title="Decrease resume font">A-</button>
       <button class="tb-btn" onclick="increaseResumeFont()" title="Increase resume font">A+</button>
+      <button class="tb-btn" onclick="decreaseLineHeight()" title="Decrease line spacing">↕-</button>
+      <button class="tb-btn" onclick="increaseLineHeight()" title="Increase line spacing">↕+</button>
       <select id="pageModeSelect" class="tb-btn" style="padding:6px 10px;background:#18181b;color:#e4e4e7" onchange="setPageMode(this.value)">
         <option value="single">Single Page</option>
         <option value="multi">Multi-Page</option>
@@ -227,39 +229,7 @@
       <div id="rLanguages" data-section="languages"></div>
     </div>
 
-    <!-- Score Panel -->
-    <div class="score-panel">
-      <div class="score-card">
-        <div class="score-card-title">📊 Resume Score</div>
-        <div class="score-ring">
-          <svg width="80" height="80" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="#27272a" stroke-width="6"/>
-            <circle id="scoreCircle" cx="40" cy="40" r="34" fill="none" stroke="#22c55e" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"/>
-          </svg>
-          <div class="score-ring-text" id="scoreText">0</div>
-        </div>
-      </div>
 
-      <div class="score-card">
-        <div class="score-card-title">📋 Breakdown</div>
-        <div id="scoreBreakdown"></div>
-      </div>
-
-      <div class="score-card">
-        <div class="score-card-title">💡 Feedback</div>
-        <div id="scoreFeedback"></div>
-      </div>
-
-      <div class="score-card">
-        <div class="score-card-title">📄 1-Page Fit</div>
-        <div id="pageFitStatus"></div>
-      </div>
-
-      <div class="score-card">
-        <div class="score-card-title">🤖 AI Insights</div>
-        <div id="aiInsights"></div>
-      </div>
-    </div>
   </div>
 
   <!-- Quick Start Wizard -->

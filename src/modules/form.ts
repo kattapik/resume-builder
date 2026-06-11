@@ -4,7 +4,6 @@ import { state, saveState, mergeSectionOrder, mergeSectionVisibility, isSectionV
 import { esc, autoExpandTextarea, autoExpandAllTextareas } from './utils';
 import { renderPreview } from './preview';
 import { pushHistory } from './history';
-import { updateScore } from './score';
 import { initSortable } from './dragdrop';
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -16,7 +15,6 @@ export function scheduleUpdate(): void {
   saveTimeout = setTimeout(() => {
     pushHistory();
     saveState();
-    updateScore();
   }, 500);
 }
 
@@ -56,7 +54,6 @@ export function toggleSectionVisibility(event: Event, section: string): void {
   renderPreview();
   pushHistory();
   saveState();
-  updateScore();
 }
 
 export function syncSectionVisibilityButtons(): void {
@@ -379,49 +376,42 @@ export function addEduEntry(): void {
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addExpEntry(): void {
   state.experience.push({ company: '', role: '', start: '', end: '', location: '', bullets: [''] });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addSkillEntry(): void {
   state.skills.push({ category: '', items: '' });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addProjEntry(): void {
   state.projects.push({ role: '', name: '', tech: '', date: '', bullets: [''] });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addLeadershipEntry(): void {
   state.leadership.push({ organization: '', role: '', start: '', end: '', bullets: [''] });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addCertificationEntry(): void {
   state.certifications.push({ name: '', issuer: '', date: '' });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 export function addLanguageEntry(): void {
   state.languages.push({ name: '', level: '' });
   renderForm();
   pushHistory();
   saveState();
-  updateScore();
 }
 
 export function removeEntry(section: string, index: number): void {
@@ -430,5 +420,4 @@ export function removeEntry(section: string, index: number): void {
   renderPreview();
   pushHistory();
   saveState();
-  updateScore();
 }

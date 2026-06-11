@@ -6,14 +6,13 @@ import './styles/main.css';
 import { loadState, saveState } from './modules/state';
 import { renderForm, onFormChange, onSummaryChange, handlePhotoUpload, toggleSectionVisibility, addEduEntry, addExpEntry, addSkillEntry, addProjEntry, addLeadershipEntry, addCertificationEntry, addLanguageEntry, removeEntry, updateEdu, updateExp, updateSkill, updateProj, updateLeadership, updateCertification, updateLanguage, updateExpBullets, updateProjBullets, updateLeadershipBullets } from './modules/form';
 import { renderPreview } from './modules/preview';
-import { updateScore } from './modules/score';
 import { pushHistory, undo, redo } from './modules/history';
 import { toggleSection, toggleEntryCard, autoExpandTextarea } from './modules/utils';
 import { onDragStart, onDragOver, onDrop, onDragEnd, onSectionDragStart, onSectionDragOver, onSectionDrop, onSectionDragEnd } from './modules/dragdrop';
 import { openWizard, closeWizard, wizardNext, wizardPrev, selectRole, toggleSkill, copyWizardPrompt, wizardApplyAI } from './modules/wizard';
 import { openAIAnalyst, closeAIAnalyst, selectAITool, copyAIPrompt, applyAIResult } from './modules/ai-tools';
 import { saveAsJSON, loadJSON, handleJSONLoad } from './modules/io';
-import { exportPDF, toggleFormFullscreen, clearAll, increaseResumeFont, decreaseResumeFont, setResumeFontFamily, setPageMode } from './modules/ui';
+import { exportPDF, toggleFormFullscreen, clearAll, increaseResumeFont, decreaseResumeFont, increaseLineHeight, decreaseLineHeight, setResumeFontFamily, setPageMode } from './modules/ui';
 
 // ===== EXPOSE GLOBALS FOR HTML onclick HANDLERS =====
 // (Necessary because HTML event attributes call functions by name on window)
@@ -73,6 +72,8 @@ declare global {
     clearAll: typeof clearAll;
     increaseResumeFont: typeof increaseResumeFont;
     decreaseResumeFont: typeof decreaseResumeFont;
+    increaseLineHeight: typeof increaseLineHeight;
+    decreaseLineHeight: typeof decreaseLineHeight;
     setResumeFontFamily: typeof setResumeFontFamily;
     setPageMode: typeof setPageMode;
     undo: () => void;
@@ -136,20 +137,20 @@ Object.assign(window, {
   clearAll,
   increaseResumeFont,
   decreaseResumeFont,
+  increaseLineHeight,
+  decreaseLineHeight,
   setResumeFontFamily,
   setPageMode,
   undo: () => {
     undo(() => {
       renderForm();
       renderPreview();
-      updateScore();
     });
   },
   redo: () => {
     redo(() => {
       renderForm();
       renderPreview();
-      updateScore();
     });
   },
 });
@@ -166,7 +167,6 @@ function init(): void {
   loadState();
   renderForm();
   renderPreview();
-  updateScore();
 }
 
 pushHistory();

@@ -5,7 +5,6 @@ import Sortable from 'sortablejs';
 import { state, saveState } from './state';
 import { renderPreview } from './preview';
 import { pushHistory } from './history';
-import { updateScore } from './score';
 
 // Active SortableJS instances — destroyed and re-created on each renderForm()
 const _instances: Sortable[] = [];
@@ -70,7 +69,6 @@ export function initSortable(): void {
           renderPreview();
           pushHistory();
           saveState();
-          updateScore();
         },
       })
     );
@@ -113,7 +111,6 @@ export function initPreviewSortable(): void {
           renderPreview();
           pushHistory();
           saveState();
-          updateScore();
           
           // Re-render form to match the new visual order of sections
           import('./form').then(({ renderForm }) => renderForm());

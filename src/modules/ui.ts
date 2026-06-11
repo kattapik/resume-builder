@@ -3,8 +3,7 @@
 
 import { state, saveState, getDefaultState } from './state';
 import { renderForm } from './form';
-import { renderPreview, increaseResumeFont, decreaseResumeFont, setResumeFontFamily, setPageMode } from './preview';
-import { updateScore } from './score';
+import { renderPreview, increaseResumeFont, decreaseResumeFont, increaseLineHeight, decreaseLineHeight, setResumeFontFamily, setPageMode } from './preview';
 import { pushHistory } from './history';
 import { autoExpandAllTextareas } from './utils';
 
@@ -30,9 +29,8 @@ export function clearAll(): void {
     pushHistory();
     renderForm();
     renderPreview();
-    updateScore();
   }
 }
 
-// Re-export font/page controls for main.ts window wiring
-export { increaseResumeFont, decreaseResumeFont, setResumeFontFamily, setPageMode };
+// Re-export font/page/spacing controls for main.ts window wiring
+export { increaseResumeFont, decreaseResumeFont, increaseLineHeight, decreaseLineHeight, setResumeFontFamily, setPageMode };
