@@ -33,7 +33,7 @@ export function initSortable(): void {
     _instances.push(
       Sortable.create(el, {
         animation: 150,
-        handle: '.drag-handle',
+        handle: '.drag-handle',   // drag starts ONLY from ⠿ handle
         draggable: '.entry-card',
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
@@ -57,12 +57,10 @@ export function initSortable(): void {
     _instances.push(
       Sortable.create(formPanel, {
         animation: 150,
-        handle: '.section-drag-handle',
+        handle: '.section-drag-handle',  // drag starts ONLY from ⠿ handle — no filter needed
         draggable: '.form-section',
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
-        filter: '.entry-card, .add-btn', // Don't let entry cards bubble up
-        preventOnFilter: true,
         onEnd() {
           // Read new order from DOM after SortableJS reordered nodes
           const sections = Array.from(
