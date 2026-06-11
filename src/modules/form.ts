@@ -25,6 +25,7 @@ export function onFormChange(): void {
   state.name = (document.getElementById('f-name') as HTMLTextAreaElement).value;
   state.contact = (document.getElementById('f-contact') as HTMLTextAreaElement).value;
   state.targetRole = (document.getElementById('f-target') as HTMLTextAreaElement).value;
+  state.address = (document.getElementById('f-address') as HTMLTextAreaElement).value;
   scheduleUpdate();
 }
 
@@ -85,6 +86,7 @@ export function renderForm(): void {
   (document.getElementById('f-name') as HTMLTextAreaElement).value = state.name;
   (document.getElementById('f-contact') as HTMLTextAreaElement).value = state.contact;
   (document.getElementById('f-target') as HTMLTextAreaElement).value = state.targetRole || '';
+  (document.getElementById('f-address') as HTMLTextAreaElement).value = state.address || '';
   (document.getElementById('f-summary') as HTMLTextAreaElement).value = state.summary || '';
 
   renderEduForm();

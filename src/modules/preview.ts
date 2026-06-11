@@ -2,6 +2,7 @@
 
 import { state, mergeSectionOrder, isSectionVisible } from './state';
 import { esc, stripIds } from './utils';
+import { initPreviewSortable } from './dragdrop';
 
 // ===== HELPERS =====
 function createResumePage(): HTMLDivElement {
@@ -30,10 +31,21 @@ export function renderPreview(): void {
   if (rHeader) rHeader.style.display = isSectionVisible('personal') ? 'grid' : 'none';
 
   const rName = document.getElementById('rName');
+  const rTarget = document.getElementById('rTarget');
   const rContact = document.getElementById('rContact');
   const rPhoto = document.getElementById('rPhoto');
   if (rName) rName.textContent = state.name || 'YOUR NAME';
-  if (rContact) rContact.textContent = state.contact || '+66 x-xxx-xxxx | email@example.com';
+  if (rTarget) {
+    rTarget.textContent = state.targetRole || '';
+    rTarget.style.display = state.targetRole ? 'block' : 'none';
+  }
+  
+  const contactParts: string[] = [];
+  if (state.contact) contactParts.push(state.contact);
+  if (state.address) contactParts.push(state.address);
+  if (rContact) {
+    rContact.textContent = contactParts.join(' | ') || '+66 x-xxx-xxxx | email@example.com';
+  }
   if (rPhoto) {
     rPhoto.innerHTML = state.photo
       ? `<img src="${state.photo}" alt="Photo" />`
@@ -369,5 +381,8 @@ export function paginate(): void {
     });
   });
 
-  setTimeout(renderPageFit, 50);
+  setTimeout(() => {
+    renderPageFit();
+    initPreviewSortable();
+  }, 50);
 }

@@ -41,7 +41,7 @@ export function mergeSectionVisibility(savedVisibility: unknown): SectionVisibil
 
 export function getDefaultState(): ResumeState {
   return {
-    name: '', contact: '', targetRole: '', summary: '',
+    name: '', contact: '', targetRole: '', address: '', summary: '',
     fontSizeStep: 0, fontFamily: 'Times New Roman, Georgia, serif',
     pageMode: 'single', photo: '', aiInsights: {},
     sectionOrder: getDefaultSectionOrder(),
@@ -66,6 +66,7 @@ function normalize(s: Partial<ResumeState>): ResumeState {
     ...defaults,
     ...s,
     summary: s.summary ?? '',
+    address: s.address ?? '',
     aiInsights: s.aiInsights ?? {},
     fontSizeStep: typeof s.fontSizeStep === 'number' ? s.fontSizeStep : 0,
     pageMode: s.pageMode ?? 'single',

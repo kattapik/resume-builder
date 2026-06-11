@@ -67,6 +67,10 @@
             <textarea class="form-textarea" rows="1" id="f-target" placeholder="Frontend Developer, Data Analyst, etc." oninput="onFormChange();autoExpandTextarea(this)"></textarea>
           </div>
           <div class="form-group">
+            <label class="form-label">Address</label>
+            <textarea class="form-textarea" rows="1" id="f-address" placeholder="Bangkok, Thailand" oninput="onFormChange();autoExpandTextarea(this)"></textarea>
+          </div>
+          <div class="form-group">
             <label class="form-label">Photo</label>
             <input type="file" id="f-photo" accept="image/*" onchange="handlePhotoUpload(event)" />
           </div>
@@ -205,21 +209,22 @@
 
     <!-- Hidden Master Container for rendering/measuring -->
     <div id="tempRender">
-      <div class="r-header" id="rPersonal">
+      <div class="r-header" id="rPersonal" data-section="personal">
         <div class="r-photo" id="rPhoto"><span>Photo</span></div>
         <div>
           <h1 class="r-name" id="rName">YOUR NAME</h1>
+          <div class="r-target" id="rTarget">TARGET ROLE</div>
           <div class="r-contact" id="rContact">+66 x-xxx-xxxx | email@example.com</div>
         </div>
       </div>
-      <div id="rSummary"></div>
-      <div id="rEducation"></div>
-      <div id="rExperience"></div>
-      <div id="rProjects"></div>
-      <div id="rSkills"></div>
-      <div id="rLeadership"></div>
-      <div id="rCertifications"></div>
-      <div id="rLanguages"></div>
+      <div id="rSummary" data-section="summary"></div>
+      <div id="rEducation" data-section="education"></div>
+      <div id="rExperience" data-section="experience"></div>
+      <div id="rProjects" data-section="projects"></div>
+      <div id="rSkills" data-section="skills"></div>
+      <div id="rLeadership" data-section="leadership"></div>
+      <div id="rCertifications" data-section="certifications"></div>
+      <div id="rLanguages" data-section="languages"></div>
     </div>
 
     <!-- Score Panel -->

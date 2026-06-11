@@ -75,6 +75,7 @@ export interface ResumeState {
   name: string;
   contact: string;
   targetRole: string;
+  address: string;
   summary: string;
   fontSizeStep: number;
   fontFamily: string;

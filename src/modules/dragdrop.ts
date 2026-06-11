@@ -77,6 +77,52 @@ export function initSortable(): void {
   }
 }
 
+// Active preview SortableJS instances — destroyed and re-created on each renderPreview()
+const _previewInstances: Sortable[] = [];
+
+/** Called at the end of paginate() to wire SortableJS on all rendered preview pages */
+export function initPreviewSortable(): void {
+  // Destroy stale preview instances before re-init
+  while (_previewInstances.length) _previewInstances.pop()!.destroy();
+
+  const pages = document.querySelectorAll('#resumePagesContainer .resume-page');
+  pages.forEach((page) => {
+    _previewInstances.push(
+      Sortable.create(page as HTMLElement, {
+        group: 'resume-sections', // allows reordering/dragging sections across pages if multi-page
+        animation: 150,
+        draggable: '[data-section]',
+        ghostClass: 'preview-sortable-ghost',
+        chosenClass: 'preview-sortable-chosen',
+        onEnd() {
+          // Collect new order from preview DOM
+          const sections = Array.from(
+            document.querySelectorAll('#resumePagesContainer .resume-page [data-section]')
+          );
+          
+          const newOrder: string[] = [];
+          sections.forEach((el) => {
+            const sec = (el as HTMLElement).dataset.section;
+            if (sec && !newOrder.includes(sec)) {
+              newOrder.push(sec);
+            }
+          });
+          
+          state.sectionOrder = newOrder;
+          
+          renderPreview();
+          pushHistory();
+          saveState();
+          updateScore();
+          
+          // Re-render form to match the new visual order of sections
+          import('./form').then(({ renderForm }) => renderForm());
+        },
+      })
+    );
+  });
+}
+
 // ===== NO-OP STUBS for HTML5 DnD (form.ts templates still have ondragstart etc.) =====
 // SortableJS handles actual drag; these prevent state corruption from stale HTML attrs
 export function onDragStart(e: DragEvent): void { e.stopPropagation(); }
