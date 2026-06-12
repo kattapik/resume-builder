@@ -29,6 +29,11 @@ export function renderPreview(): void {
   if (fontSelect) fontSelect.value = state.fontFamily;
   if (pageModeSelect) pageModeSelect.value = state.pageMode || 'single';
 
+  const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+  if (fontSizeDisplay) {
+    fontSizeDisplay.textContent = (12 + (state.fontSizeStep || 0)).toString();
+  }
+
   const rHeader = document.querySelector('.r-header') as HTMLElement | null;
   if (rHeader) rHeader.style.display = isSectionVisible('personal') ? 'grid' : 'none';
 
