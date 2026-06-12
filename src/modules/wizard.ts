@@ -276,7 +276,7 @@ JSON output schema (output this ONLY at the end, after all interview questions a
   "targetRole": "string",
   "personalStatement": "string",
   "education": [{"school": "string", "degree": "string", "gpa": "string", "start": "string", "end": "string", "coursework": "string", "activities": "string"}],
-  "experience": [{"company": "string", "role": "string", "start": "string", "end": "string", "location": "string", "bullets": ["string"]}],
+  "experience": [{"company": "string", "role": "string", "project": "string", "start": "string", "end": "string", "location": "string", "bullets": ["string"]}],
   "skills": [{"category": "string", "items": "string"}],
   "projects": [{"role": "string", "name": "string", "tech": "string", "date": "string", "bullets": ["string"]}],
   "leadership": [{"organization": "string", "role": "string", "start": "string", "end": "string", "bullets": ["string"]}],

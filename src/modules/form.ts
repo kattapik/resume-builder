@@ -183,7 +183,10 @@ export function renderExpForm(): void {
           <div class="form-group"><label class="form-label">Company</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'company',this.value);autoExpandTextarea(this)" placeholder="Company Name">${esc(e.company)}</textarea></div>
         </div>
         <div class="form-row">
+          <div class="form-group"><label class="form-label">Project</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'project',this.value);autoExpandTextarea(this)" placeholder="Project Name (e.g. E-Commerce Platform)">${esc(e.project || '')}</textarea></div>
           <div class="form-group"><label class="form-label">Location</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'location',this.value);autoExpandTextarea(this)" placeholder="Bangkok, Thailand">${esc(e.location)}</textarea></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label class="form-label">Start</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'start',this.value);autoExpandTextarea(this)" placeholder="Jun 2025">${esc(e.start)}</textarea></div>
           <div class="form-group"><label class="form-label">End</label><textarea class="form-textarea" rows="1" oninput="updateExp(${i},'end',this.value);autoExpandTextarea(this)" placeholder="Aug 2025">${esc(e.end)}</textarea></div>
         </div>
@@ -378,7 +381,7 @@ export function addEduEntry(): void {
   saveState();
 }
 export function addExpEntry(): void {
-  state.experience.push({ company: '', role: '', start: '', end: '', location: '', bullets: [''] });
+  state.experience.push({ company: '', role: '', project: '', start: '', end: '', location: '', bullets: [''] });
   renderForm();
   pushHistory();
   saveState();

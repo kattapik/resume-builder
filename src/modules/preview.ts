@@ -144,7 +144,7 @@ export function renderExpPreview(): void {
     entries.map((e) => `
       <div class="r-entry">
         <div class="r-topline"><div class="r-left">${esc(e.role)}${e.company ? ' | ' + esc(e.company) : ''}</div><div class="r-right">${esc(e.start)}${e.end ? ' - ' + esc(e.end) : ''}</div></div>
-        ${e.location ? `<div class="r-tech-stack">${esc(e.location)}</div>` : ''}
+        ${e.project || e.location ? `<div class="r-tech-stack">${e.project ? `<strong>Project:</strong> ${esc(e.project)}` : ''}${e.project && e.location ? ' | ' : ''}${e.location ? esc(e.location) : ''}</div>` : ''}
         ${(e.bullets || []).filter((b) => b.trim()).length ? '<ul class="r-ul">' + (e.bullets || []).filter((b) => b.trim()).map((b) => `<li class="r-li">${esc(b)}</li>`).join('') + '</ul>' : ''}
       </div>
     `).join('') + '</div>';

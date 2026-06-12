@@ -13,6 +13,7 @@ export interface EducationEntry {
 export interface ExperienceEntry {
   company: string;
   role: string;
+  project?: string;
   start: string;
   end: string;
   location: string;

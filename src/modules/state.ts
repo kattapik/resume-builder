@@ -47,7 +47,7 @@ export function getDefaultState(): ResumeState {
     sectionOrder: getDefaultSectionOrder(),
     sectionVisibility: getDefaultSectionVisibility(),
     education: [{ school: '', degree: '', gpa: '', start: '', end: '', coursework: '', activities: '' }] as EducationEntry[],
-    experience: [{ company: '', role: '', start: '', end: '', location: '', bullets: [''] }] as ExperienceEntry[],
+    experience: [{ company: '', role: '', project: '', start: '', end: '', location: '', bullets: [''] }] as ExperienceEntry[],
     skills: [
       { category: 'Programming Languages', items: '' },
       { category: 'Frameworks & Tools', items: '' },

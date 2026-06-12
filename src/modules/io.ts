@@ -21,6 +21,7 @@ const EducationSchema = z.object({
 const ExperienceSchema = z.object({
   company: z.string().default(''),
   role: z.string().default(''),
+  project: z.string().default(''),
   start: z.string().default(''),
   end: z.string().default(''),
   location: z.string().default(''),
