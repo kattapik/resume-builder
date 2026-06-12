@@ -118,6 +118,39 @@ export function initPreviewSortable(): void {
       })
     );
   });
+
+  // ===== ENTRY-LEVEL SORTABLE IN PREVIEW =====
+  const previewSections = document.querySelectorAll('#resumePagesContainer .r-section');
+  previewSections.forEach((sec) => {
+    const parentId = sec.parentElement?.id;
+    if (!parentId) return;
+    
+    // map parent element ID to state keys: rExperience -> experience
+    const sectionKey = parentId.replace('r', '').toLowerCase();
+    const validKeys = ['education', 'experience', 'skills', 'projects', 'leadership', 'certifications', 'languages'];
+    if (!validKeys.includes(sectionKey)) return;
+
+    _previewInstances.push(
+      Sortable.create(sec as HTMLElement, {
+        animation: 150,
+        draggable: '.r-entry',
+        ghostClass: 'preview-sortable-ghost',
+        onEnd({ oldIndex, newIndex }) {
+          if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+          const arr = state[sectionKey as keyof typeof state] as unknown[];
+          const [item] = arr.splice(oldIndex, 1);
+          arr.splice(newIndex, 0, item);
+          
+          renderPreview();
+          pushHistory();
+          saveState();
+          
+          // Re-render form to match the new visual order of items
+          import('./form').then(({ renderForm }) => renderForm());
+        },
+      })
+    );
+  });
 }
 
 // ===== NO-OP STUBS for HTML5 DnD (form.ts templates still have ondragstart etc.) =====

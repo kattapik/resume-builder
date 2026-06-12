@@ -107,8 +107,7 @@ export function renderEduForm(): void {
   c.innerHTML = state.education
     .map(
       (e, i) => `
-    <div class="entry-card" draggable="true" data-section="education" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="education" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${e.school || 'New Education'}</span>
@@ -140,8 +139,7 @@ export function renderSkillForm(): void {
   c.innerHTML = state.skills
     .map(
       (s, i) => `
-    <div class="entry-card" draggable="true" data-section="skills" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="skills" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${s.category || 'New Category'}</span>
@@ -167,8 +165,7 @@ export function renderExpForm(): void {
   c.innerHTML = state.experience
     .map(
       (e, i) => `
-    <div class="entry-card" draggable="true" data-section="experience" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="experience" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${e.role || e.company || 'New Experience'}</span>
@@ -208,8 +205,7 @@ export function renderProjForm(): void {
   c.innerHTML = state.projects
     .map(
       (p, i) => `
-    <div class="entry-card" draggable="true" data-section="projects" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="projects" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${p.role || p.name || 'New Project'}</span>
@@ -245,8 +241,7 @@ export function renderLeadershipForm(): void {
   c.innerHTML = state.leadership
     .map(
       (e, i) => `
-    <div class="entry-card" draggable="true" data-section="leadership" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="leadership" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${e.role || e.organization || 'New Leadership'}</span>
@@ -279,8 +274,7 @@ export function renderCertificationForm(): void {
   c.innerHTML = state.certifications
     .map(
       (e, i) => `
-    <div class="entry-card" draggable="true" data-section="certifications" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="certifications" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${e.name || 'New Certification'}</span>
@@ -309,8 +303,7 @@ export function renderLanguageForm(): void {
   c.innerHTML = state.languages
     .map(
       (e, i) => `
-    <div class="entry-card" draggable="true" data-section="languages" data-index="${i}"
-      ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+    <div class="entry-card" data-section="languages" data-index="${i}">
       <div class="entry-card-header">
         <span class="drag-handle">⠿</span>
         <span class="entry-card-title">${e.name || 'New Language'}</span>
