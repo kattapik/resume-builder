@@ -13,6 +13,7 @@ import { openWizard, closeWizard, wizardNext, wizardPrev, selectRole, toggleSkil
 import { openAIAnalyst, closeAIAnalyst, selectAITool, copyAIPrompt, applyAIResult } from './modules/ai-tools';
 import { saveAsJSON, loadJSON, handleJSONLoad } from './modules/io';
 import { exportPDF, toggleFormFullscreen, clearAll, increaseResumeFont, decreaseResumeFont, increaseLineHeight, decreaseLineHeight, setResumeFontFamily, setPageMode } from './modules/ui';
+import { openPDFMerger, closePDFMerger, handlePDFSelection, removePDF, mergeAndDownloadPDFs } from './modules/merger';
 
 // ===== EXPOSE GLOBALS FOR HTML onclick HANDLERS =====
 // (Necessary because HTML event attributes call functions by name on window)
@@ -76,6 +77,11 @@ declare global {
     decreaseLineHeight: typeof decreaseLineHeight;
     setResumeFontFamily: typeof setResumeFontFamily;
     setPageMode: typeof setPageMode;
+    openPDFMerger: typeof openPDFMerger;
+    closePDFMerger: typeof closePDFMerger;
+    handlePDFSelection: typeof handlePDFSelection;
+    removePDF: typeof removePDF;
+    mergeAndDownloadPDFs: typeof mergeAndDownloadPDFs;
     undo: () => void;
     redo: () => void;
   }
@@ -141,6 +147,11 @@ Object.assign(window, {
   decreaseLineHeight,
   setResumeFontFamily,
   setPageMode,
+  openPDFMerger,
+  closePDFMerger,
+  handlePDFSelection,
+  removePDF,
+  mergeAndDownloadPDFs,
   undo: () => {
     undo(() => {
       renderForm();

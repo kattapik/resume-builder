@@ -263,8 +263,6 @@ export function paginate(): void {
   container.innerHTML = '';
 
   const pageLimit = 1056;
-  const paddingY = 67.2;
-  const maxContentHeight = pageLimit - paddingY;
   const temp = document.getElementById('tempRender');
   if (!temp) return;
   const pageMode = state.pageMode || 'single';
@@ -294,7 +292,6 @@ export function paginate(): void {
   // ===== MULTI-PAGE =====
   let currentPage = createResumePage();
   container.appendChild(currentPage);
-  let currentPageHeight = 0;
 
   const sections = Array.from(temp.children) as HTMLElement[];
 
@@ -302,17 +299,18 @@ export function paginate(): void {
     if (!section.innerHTML.trim() || section.style.display === 'none') return;
 
     if (section.id === 'rPersonal' || section.id === 'rSummary') {
-      const rect = section.getBoundingClientRect();
-      const height = rect.height;
-      if (currentPageHeight + height > maxContentHeight && currentPageHeight > 0) {
-        currentPage = createResumePage();
-        container.appendChild(currentPage);
-        currentPageHeight = 0;
-      }
-      const clone = section.cloneNode(true) as Element;
+      const clone = section.cloneNode(true) as HTMLElement;
       stripIds(clone);
       currentPage.appendChild(clone);
-      currentPageHeight += height;
+
+      if (currentPage.scrollHeight > pageLimit) {
+        if (currentPage.children.length > 1) {
+          currentPage.removeChild(clone);
+          currentPage = createResumePage();
+          container.appendChild(currentPage);
+          currentPage.appendChild(clone);
+        }
+      }
       return;
     }
 
@@ -320,30 +318,17 @@ export function paginate(): void {
     if (!rSection) return;
 
     const titleEl = rSection.querySelector('.r-section-title') as HTMLElement | null;
-    const titleHeight = titleEl ? titleEl.getBoundingClientRect().height : 0;
 
     let entries = Array.from(rSection.querySelectorAll('.r-entry')) as HTMLElement[];
-    if (entries.length === 0) {
+    const isSkillsOrCertOrLang = entries.length === 0;
+    if (isSkillsOrCertOrLang) {
       const skillsContainer = rSection.querySelector('.r-skills') as HTMLElement | null;
       if (skillsContainer) {
         entries = Array.from(skillsContainer.children) as HTMLElement[];
       }
     }
 
-    if (entries.length === 0) {
-      const rect = section.getBoundingClientRect();
-      const height = rect.height;
-      if (currentPageHeight + height > maxContentHeight && currentPageHeight > 0) {
-        currentPage = createResumePage();
-        container.appendChild(currentPage);
-        currentPageHeight = 0;
-      }
-      const clone = section.cloneNode(true) as Element;
-      stripIds(clone);
-      currentPage.appendChild(clone);
-      currentPageHeight += height;
-      return;
-    }
+    if (entries.length === 0) return;
 
     let pageSectionContainer: HTMLElement | null = null;
     let pageSectionContentWrapper: HTMLElement | null = null;
@@ -375,27 +360,91 @@ export function paginate(): void {
       pageSectionContainer = sectionClone;
     }
 
-    entries.forEach((entry, idx) => {
-      const entryHeight = entry.getBoundingClientRect().height;
-      const requiredHeight = pageSectionContainer === null ? titleHeight + entryHeight + 15 : entryHeight;
-
-      if (currentPageHeight + requiredHeight > maxContentHeight && currentPageHeight > 0) {
-        currentPage = createResumePage();
-        container.appendChild(currentPage);
-        currentPageHeight = 0;
-        pageSectionContainer = null;
-        pageSectionContentWrapper = null;
-      }
-
+    function appendEntry(entryToAppend: HTMLElement, isContinuation: boolean = false): void {
       if (!pageSectionContainer) {
         initSectionOnCurrentPage();
-        currentPageHeight += titleHeight;
       }
 
-      const entryClone = entry.cloneNode(true) as Element;
+      const entryClone = entryToAppend.cloneNode(true) as HTMLElement;
       stripIds(entryClone);
       pageSectionContentWrapper!.appendChild(entryClone);
-      currentPageHeight += entryHeight;
+
+      if (currentPage.scrollHeight > pageLimit) {
+        const bulletList = entryClone.querySelector('.r-ul') as HTMLElement | null;
+        const bullets = bulletList ? Array.from(bulletList.querySelectorAll('.r-li')) as HTMLElement[] : [];
+
+        if (bullets.length > 1) {
+          bulletList!.innerHTML = '';
+          const remainingBullets = [...bullets];
+
+          while (remainingBullets.length > 0) {
+            const bullet = remainingBullets.shift()!;
+            bulletList!.appendChild(bullet);
+
+            if (currentPage.scrollHeight > pageLimit) {
+              bulletList!.removeChild(bullet);
+              remainingBullets.unshift(bullet);
+              break;
+            }
+          }
+
+          if (bulletList && bulletList.children.length > 0) {
+            currentPage = createResumePage();
+            container!.appendChild(currentPage);
+            pageSectionContainer = null;
+            pageSectionContentWrapper = null;
+            initSectionOnCurrentPage();
+
+            const contEntry = entryClone.cloneNode(true) as HTMLElement;
+            const roleEl = contEntry.querySelector('.r-left');
+            if (roleEl && !isContinuation) {
+              roleEl.innerHTML += ' <em>(Cont.)</em>';
+            }
+            const dateEl = contEntry.querySelector('.r-right');
+            if (dateEl) dateEl.innerHTML = '';
+            const techEl = contEntry.querySelector('.r-tech-stack');
+            if (techEl) techEl.innerHTML = '';
+
+            const contBulletList = contEntry.querySelector('.r-ul') as HTMLElement;
+            contBulletList.innerHTML = '';
+            remainingBullets.forEach((b) => contBulletList.appendChild(b));
+
+            appendEntry(contEntry, true);
+            return;
+          }
+        }
+
+        pageSectionContentWrapper!.removeChild(entryClone);
+
+        const pageChildrenCount = currentPage.children.length;
+        const sectionChildrenCount = pageSectionContentWrapper ? pageSectionContentWrapper.children.length : 0;
+        const hasOnlyTitle = titleEl ? sectionChildrenCount === 1 : sectionChildrenCount === 0;
+
+        if (pageChildrenCount > 1 || !hasOnlyTitle) {
+          if (hasOnlyTitle && pageSectionContainer) {
+            currentPage.removeChild(pageSectionContainer);
+          }
+
+          currentPage = createResumePage();
+          container!.appendChild(currentPage);
+          pageSectionContainer = null;
+          pageSectionContentWrapper = null;
+
+          initSectionOnCurrentPage();
+          
+          const freshClone = entryToAppend.cloneNode(true) as HTMLElement;
+          stripIds(freshClone);
+          pageSectionContentWrapper!.appendChild(freshClone);
+        } else {
+          const freshClone = entryToAppend.cloneNode(true) as HTMLElement;
+          stripIds(freshClone);
+          pageSectionContentWrapper!.appendChild(freshClone);
+        }
+      }
+    }
+
+    entries.forEach((entry) => {
+      appendEntry(entry);
     });
   });
 

@@ -1,0 +1,126 @@
+/* ===== PDF Merger Styles ===== */
+
+.file-upload-box {
+  border: 2px dashed #3f3f46;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #18181b;
+  transition: all 0.2s ease;
+}
+
+.file-upload-box:hover {
+  border-color: #3b82f6;
+  background: #202024;
+}
+
+.upload-icon {
+  font-size: 28px;
+}
+
+.upload-sub {
+  font-size: 11px;
+  color: #71717a;
+}
+
+.pdf-list-container {
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  min-height: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.pdf-empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #71717a;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.pdf-list {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdf-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: grab;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+.pdf-item:hover {
+  background: #202024;
+  border-color: #3f3f46;
+}
+
+.pdf-item:active {
+  cursor: grabbing;
+}
+
+.pdf-item-handle {
+  color: #52525b;
+  font-size: 14px;
+}
+
+.pdf-item-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e4e4e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-item-pages {
+  font-size: 10px;
+  background: #27272a;
+  color: #a1a1aa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.pdf-item-remove {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+}
+
+.pdf-item-remove:hover {
+  opacity: 0.8;
+}
+
+/* Sortable ghost class for PDF list */
+.pdf-sortable-ghost {
+  opacity: 0.4;
+  border: 1px dashed #3b82f6;
+  background: #1e293b;
+}

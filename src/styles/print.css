@@ -1,17 +1,29 @@
 /* ===== Print Styles ===== */
 @media print {
-  body { background: white; height: auto; overflow: visible; }
+  @page { size: letter; margin: 0; }
+  body { background: white; height: auto; overflow: visible !important; }
   .topbar,
   .form-panel,
   .score-panel,
   .wizard-overlay,
   .ai-overlay { display: none !important; }
+  
   .preview-panel {
     background: white;
     padding: 0;
-    overflow: visible;
-    display: block;
+    overflow: visible !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
   }
+  
+  #resumePagesContainer {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    gap: 0 !important;
+  }
+
   .resume-page {
     box-shadow: none !important;
     margin: 0 !important;
@@ -20,8 +32,31 @@
     page-break-after: always;
     break-after: page;
     padding: 0.35in 0.5in !important;
+    overflow: visible !important;
+    position: static !important; /* static removes positioning context that might force rendering layers */
   }
+  
+  .resume-page,
+  .resume-page * {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    cursor: default !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    will-change: auto !important;
+    transform: none !important;
+    text-rendering: optimizeLegibility !important;
+    border-radius: 0 !important; /* border-radius + overflow hidden can cause rendering layers */
+  }
+  
   .resume-page.overflow::after {
     display: none;
   }
 }
+
+
+
